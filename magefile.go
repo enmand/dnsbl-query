@@ -16,7 +16,9 @@ const (
 )
 
 var (
-	grun = sh.RunCmd("go", "run")
+	grun  = sh.RunCmd("go", "run")
+	gtest = sh.RunCmd("go", "test")
+	ggen  = sh.RunCmd("go", "generate")
 )
 
 func (Go) Lint(ctx context.Context) error {
@@ -25,4 +27,12 @@ func (Go) Lint(ctx context.Context) error {
 	}
 
 	return grun(linter, "run", "./...")
+}
+
+func (Go) Test(ctx context.Context) error {
+	return gtest("-v", "./..")
+}
+
+func (Go) Generate(ctx context.Context) error {
+	return ggen("./...")
 }
