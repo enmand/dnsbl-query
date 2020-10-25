@@ -2,11 +2,7 @@ package mixin
 
 import (
 	"github.com/facebook/ent"
-	"github.com/facebook/[]ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New),
-	}
-}/schema/field"
+	"github.com/facebook/ent/schema/field"
 	"github.com/google/uuid"
 )
 
