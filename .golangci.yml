@@ -1,0 +1,17 @@
+run:
+  skip-dirs:
+    - /gen/
+
+linters:
+  enable:
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    - errorlint
