@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/ip"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 	"github.com/facebook/ent/dialect/sql"
 )
 

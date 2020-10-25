@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 )
 
 // The DNSBLQueryFunc type is an adapter to allow the use of ordinary
