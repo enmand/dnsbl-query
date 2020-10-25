@@ -3,7 +3,7 @@
 package dnsblresponse
 
 import (
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/predicate"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/predicate"
 	"github.com/facebook/ent/dialect/sql"
 )
 

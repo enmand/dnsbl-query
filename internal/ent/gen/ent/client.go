@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/migrate"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/migrate"
 
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/dnsblquery"
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/dnsblresponse"
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/ip"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 
 	"github.com/facebook/ent/dialect"
 	"github.com/facebook/ent/dialect/sql"

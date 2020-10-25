@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/dnsblquery"
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/dnsblresponse"
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/ip"
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/predicate"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/predicate"
 
 	"github.com/facebook/ent"
 )

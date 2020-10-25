@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in github.com/enmand/dnsbl-query/internel/ent/gen/ent/runtime.go
+// The schema-stitching logic is generated in github.com/enmand/dnsbl-query/internal/ent/gen/ent/runtime.go
 
 const (
 	Version = "(devel)" // Version of ent codegen.

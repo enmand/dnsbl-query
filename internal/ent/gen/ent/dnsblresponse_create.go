@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent/dnsblresponse"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
 )

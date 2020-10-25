@@ -5,9 +5,9 @@ package enttest
 import (
 	"context"
 
-	"github.com/enmand/dnsbl-query/internel/ent/gen/ent"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 	// required by schema hooks.
-	_ "github.com/enmand/dnsbl-query/internel/ent/gen/ent/runtime"
+	_ "github.com/enmand/dnsbl-query/internal/ent/gen/ent/runtime"
 
 	"github.com/facebook/ent/dialect/sql/schema"
 )

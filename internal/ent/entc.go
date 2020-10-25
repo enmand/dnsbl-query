@@ -14,7 +14,7 @@ import (
 )
 
 // TODO: pkg should be configurable, and/or set using go.mod name
-const pkg = "github.com/enmand/dnsbl-query/internel/ent/gen/ent"
+const pkg = "github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 
 func main() {
 	err := entc.Generate("./schema", &gen.Config{
