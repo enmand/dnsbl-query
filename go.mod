@@ -17,6 +17,8 @@ require (
 	github.com/hashicorp/go-multierror v1.1.0
 	// Mage is a pure Go-based replacement for make
 	github.com/magefile/mage v1.10.0
+	// gomega is an assertions based testing library
+	github.com/onsi/gomega v1.10.1
 	// gqlparser/v2 is used in entc generated code for pagination
 	github.com/vektah/gqlparser/v2 v2.1.0
 	// msgpack is used in entc generated code for pagination

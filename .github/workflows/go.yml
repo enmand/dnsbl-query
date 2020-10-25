@@ -19,13 +19,12 @@ jobs:
         env:
           GOPRIVATE: github.com/enmand
 
-      - name: Run tests
+      - name: Run linter
         run: go run github.com/magefile/mage -v go:lint
         env:
           GOPRIVATE: github.com/enmand
   test:
     name: Test
-    id: false # TODO: enable when there are tests
     runs-on: ubuntu-latest
     steps:
       - name: Set up go
