@@ -21,7 +21,7 @@ func (DNSBLResponse) Fields() []ent.Field {
 }
 
 // Mixins are the field mixins for the DNSBLResponse entity
-func (DNSBLResponse) Mixins() []ent.Mixin {
+func (DNSBLResponse) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.ID{},
 		mixin.Timed{},

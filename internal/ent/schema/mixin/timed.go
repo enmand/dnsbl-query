@@ -6,12 +6,13 @@ import (
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/field"
 	"github.com/facebook/ent/schema/index"
+	"github.com/facebook/ent/schema/mixin"
 )
 
 // Timed is a mixin providing time-based fields recording the creation
 // and update time of an entity
 type Timed struct {
-	ent.Mixin
+	mixin.Schema
 }
 
 // Fields provides a common fieldset to entities that get mixed in
