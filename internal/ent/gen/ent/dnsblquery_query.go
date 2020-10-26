@@ -307,6 +307,19 @@ func (dqq *DNSBLQueryQuery) WithIPAddress(opts ...func(*IPQuery)) *DNSBLQueryQue
 
 // GroupBy used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.DNSBLQuery.Query().
+//		GroupBy(dnsblquery.FieldCreatedAt).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
+//
 func (dqq *DNSBLQueryQuery) GroupBy(field string, fields ...string) *DNSBLQueryGroupBy {
 	group := &DNSBLQueryGroupBy{config: dqq.config}
 	group.fields = append([]string{field}, fields...)
@@ -320,6 +333,17 @@ func (dqq *DNSBLQueryQuery) GroupBy(field string, fields ...string) *DNSBLQueryG
 }
 
 // Select one or more fields from the given query.
+//
+// Example:
+//
+//	var v []struct {
+//		CreatedAt time.Time `json:"created_at,omitempty"`
+//	}
+//
+//	client.DNSBLQuery.Query().
+//		Select(dnsblquery.FieldCreatedAt).
+//		Scan(ctx, &v)
+//
 func (dqq *DNSBLQueryQuery) Select(field string, fields ...string) *DNSBLQuerySelect {
 	selector := &DNSBLQuerySelect{config: dqq.config}
 	selector.fields = append([]string{field}, fields...)

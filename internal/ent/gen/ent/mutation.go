@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
@@ -37,6 +38,8 @@ type DNSBLQueryMutation struct {
 	op                Op
 	typ               string
 	id                *uuid.UUID
+	created_at        *time.Time
+	updated_at        *time.Time
 	clearedFields     map[string]struct{}
 	responses         map[uuid.UUID]struct{}
 	removedresponses  map[uuid.UUID]struct{}
@@ -131,6 +134,80 @@ func (m *DNSBLQueryMutation) ID() (id uuid.UUID, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetCreatedAt sets the created_at field.
+func (m *DNSBLQueryMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the created_at value in the mutation.
+func (m *DNSBLQueryMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old created_at value of the DNSBLQuery.
+// If the DNSBLQuery object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *DNSBLQueryMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt reset all changes of the "created_at" field.
+func (m *DNSBLQueryMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (m *DNSBLQueryMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the updated_at value in the mutation.
+func (m *DNSBLQueryMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old updated_at value of the DNSBLQuery.
+// If the DNSBLQuery object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *DNSBLQueryMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt reset all changes of the "updated_at" field.
+func (m *DNSBLQueryMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // AddResponseIDs adds the responses edge to DNSBLResponse by ids.
@@ -239,7 +316,13 @@ func (m *DNSBLQueryMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *DNSBLQueryMutation) Fields() []string {
-	fields := make([]string, 0, 0)
+	fields := make([]string, 0, 2)
+	if m.created_at != nil {
+		fields = append(fields, dnsblquery.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, dnsblquery.FieldUpdatedAt)
+	}
 	return fields
 }
 
@@ -247,6 +330,12 @@ func (m *DNSBLQueryMutation) Fields() []string {
 // The second boolean value indicates that this field was
 // not set, or was not define in the schema.
 func (m *DNSBLQueryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case dnsblquery.FieldCreatedAt:
+		return m.CreatedAt()
+	case dnsblquery.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
 	return nil, false
 }
 
@@ -254,6 +343,12 @@ func (m *DNSBLQueryMutation) Field(name string) (ent.Value, bool) {
 // An error is returned if the mutation operation is not UpdateOne,
 // or the query to the database was failed.
 func (m *DNSBLQueryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case dnsblquery.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case dnsblquery.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
 	return nil, fmt.Errorf("unknown DNSBLQuery field %s", name)
 }
 
@@ -262,6 +357,20 @@ func (m *DNSBLQueryMutation) OldField(ctx context.Context, name string) (ent.Val
 // type mismatch the field type.
 func (m *DNSBLQueryMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case dnsblquery.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case dnsblquery.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DNSBLQuery field %s", name)
 }
@@ -283,6 +392,8 @@ func (m *DNSBLQueryMutation) AddedField(name string) (ent.Value, bool) {
 // error if the field is not defined in the schema, or if the
 // type mismatch the field type.
 func (m *DNSBLQueryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown DNSBLQuery numeric field %s", name)
 }
 
@@ -309,6 +420,14 @@ func (m *DNSBLQueryMutation) ClearField(name string) error {
 // given field name. It returns an error if the field is not
 // defined in the schema.
 func (m *DNSBLQueryMutation) ResetField(name string) error {
+	switch name {
+	case dnsblquery.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case dnsblquery.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown DNSBLQuery field %s", name)
 }
 
@@ -425,6 +544,8 @@ type DNSBLResponseMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
+	created_at    *time.Time
+	updated_at    *time.Time
 	code          *string
 	description   *string
 	clearedFields map[string]struct{}
@@ -518,6 +639,80 @@ func (m *DNSBLResponseMutation) ID() (id uuid.UUID, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetCreatedAt sets the created_at field.
+func (m *DNSBLResponseMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the created_at value in the mutation.
+func (m *DNSBLResponseMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old created_at value of the DNSBLResponse.
+// If the DNSBLResponse object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *DNSBLResponseMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt reset all changes of the "created_at" field.
+func (m *DNSBLResponseMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (m *DNSBLResponseMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the updated_at value in the mutation.
+func (m *DNSBLResponseMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old updated_at value of the DNSBLResponse.
+// If the DNSBLResponse object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *DNSBLResponseMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt reset all changes of the "updated_at" field.
+func (m *DNSBLResponseMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // SetCode sets the code field.
@@ -647,7 +842,13 @@ func (m *DNSBLResponseMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *DNSBLResponseMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 4)
+	if m.created_at != nil {
+		fields = append(fields, dnsblresponse.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, dnsblresponse.FieldUpdatedAt)
+	}
 	if m.code != nil {
 		fields = append(fields, dnsblresponse.FieldCode)
 	}
@@ -662,6 +863,10 @@ func (m *DNSBLResponseMutation) Fields() []string {
 // not set, or was not define in the schema.
 func (m *DNSBLResponseMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case dnsblresponse.FieldCreatedAt:
+		return m.CreatedAt()
+	case dnsblresponse.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case dnsblresponse.FieldCode:
 		return m.Code()
 	case dnsblresponse.FieldDescription:
@@ -675,6 +880,10 @@ func (m *DNSBLResponseMutation) Field(name string) (ent.Value, bool) {
 // or the query to the database was failed.
 func (m *DNSBLResponseMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case dnsblresponse.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case dnsblresponse.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case dnsblresponse.FieldCode:
 		return m.OldCode(ctx)
 	case dnsblresponse.FieldDescription:
@@ -688,6 +897,20 @@ func (m *DNSBLResponseMutation) OldField(ctx context.Context, name string) (ent.
 // type mismatch the field type.
 func (m *DNSBLResponseMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case dnsblresponse.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case dnsblresponse.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
 	case dnsblresponse.FieldCode:
 		v, ok := value.(string)
 		if !ok {
@@ -752,6 +975,12 @@ func (m *DNSBLResponseMutation) ClearField(name string) error {
 // defined in the schema.
 func (m *DNSBLResponseMutation) ResetField(name string) error {
 	switch name {
+	case dnsblresponse.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case dnsblresponse.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case dnsblresponse.FieldCode:
 		m.ResetCode()
 		return nil
@@ -849,6 +1078,8 @@ type IPMutation struct {
 	op             Op
 	typ            string
 	id             *uuid.UUID
+	created_at     *time.Time
+	updated_at     *time.Time
 	ip_address     *string
 	clearedFields  map[string]struct{}
 	queries        map[uuid.UUID]struct{}
@@ -942,6 +1173,80 @@ func (m *IPMutation) ID() (id uuid.UUID, exists bool) {
 		return
 	}
 	return *m.id, true
+}
+
+// SetCreatedAt sets the created_at field.
+func (m *IPMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the created_at value in the mutation.
+func (m *IPMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old created_at value of the IP.
+// If the IP object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *IPMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt reset all changes of the "created_at" field.
+func (m *IPMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (m *IPMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the updated_at value in the mutation.
+func (m *IPMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old updated_at value of the IP.
+// If the IP object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *IPMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt reset all changes of the "updated_at" field.
+func (m *IPMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // SetIPAddress sets the ip_address field.
@@ -1048,7 +1353,13 @@ func (m *IPMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *IPMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 3)
+	if m.created_at != nil {
+		fields = append(fields, ip.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, ip.FieldUpdatedAt)
+	}
 	if m.ip_address != nil {
 		fields = append(fields, ip.FieldIPAddress)
 	}
@@ -1060,6 +1371,10 @@ func (m *IPMutation) Fields() []string {
 // not set, or was not define in the schema.
 func (m *IPMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case ip.FieldCreatedAt:
+		return m.CreatedAt()
+	case ip.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case ip.FieldIPAddress:
 		return m.IPAddress()
 	}
@@ -1071,6 +1386,10 @@ func (m *IPMutation) Field(name string) (ent.Value, bool) {
 // or the query to the database was failed.
 func (m *IPMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case ip.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case ip.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case ip.FieldIPAddress:
 		return m.OldIPAddress(ctx)
 	}
@@ -1082,6 +1401,20 @@ func (m *IPMutation) OldField(ctx context.Context, name string) (ent.Value, erro
 // type mismatch the field type.
 func (m *IPMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case ip.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case ip.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
 	case ip.FieldIPAddress:
 		v, ok := value.(string)
 		if !ok {
@@ -1139,6 +1472,12 @@ func (m *IPMutation) ClearField(name string) error {
 // defined in the schema.
 func (m *IPMutation) ResetField(name string) error {
 	switch name {
+	case ip.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case ip.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case ip.FieldIPAddress:
 		m.ResetIPAddress()
 		return nil

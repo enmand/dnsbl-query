@@ -275,12 +275,12 @@ func (drq *DNSBLResponseQuery) WithQuery(opts ...func(*DNSBLQueryQuery)) *DNSBLR
 // Example:
 //
 //	var v []struct {
-//		Code string `json:"code,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.DNSBLResponse.Query().
-//		GroupBy(dnsblresponse.FieldCode).
+//		GroupBy(dnsblresponse.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -301,11 +301,11 @@ func (drq *DNSBLResponseQuery) GroupBy(field string, fields ...string) *DNSBLRes
 // Example:
 //
 //	var v []struct {
-//		Code string `json:"code,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
 //	client.DNSBLResponse.Query().
-//		Select(dnsblresponse.FieldCode).
+//		Select(dnsblresponse.FieldCreatedAt).
 //		Scan(ctx, &v)
 //
 func (drq *DNSBLResponseQuery) Select(field string, fields ...string) *DNSBLResponseSelect {

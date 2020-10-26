@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 	"github.com/facebook/ent/dialect/sql"
@@ -16,6 +17,10 @@ type IP struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// IPAddress holds the value of the "ip_address" field.
 	IPAddress string `json:"ip_address,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -45,6 +50,8 @@ func (e IPEdges) QueriesOrErr() ([]*DNSBLQuery, error) {
 func (*IP) scanValues() []interface{} {
 	return []interface{}{
 		&uuid.UUID{},      // id
+		&sql.NullTime{},   // created_at
+		&sql.NullTime{},   // updated_at
 		&sql.NullString{}, // ip_address
 	}
 }
@@ -61,8 +68,18 @@ func (i *IP) assignValues(values ...interface{}) error {
 		i.ID = *value
 	}
 	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field ip_address", values[0])
+	if value, ok := values[0].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field created_at", values[0])
+	} else if value.Valid {
+		i.CreatedAt = value.Time
+	}
+	if value, ok := values[1].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field updated_at", values[1])
+	} else if value.Valid {
+		i.UpdatedAt = value.Time
+	}
+	if value, ok := values[2].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field ip_address", values[2])
 	} else if value.Valid {
 		i.IPAddress = value.String
 	}
@@ -97,6 +114,10 @@ func (i *IP) String() string {
 	var builder strings.Builder
 	builder.WriteString("IP(")
 	builder.WriteString(fmt.Sprintf("id=%v", i.ID))
+	builder.WriteString(", created_at=")
+	builder.WriteString(i.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", updated_at=")
+	builder.WriteString(i.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ip_address=")
 	builder.WriteString(i.IPAddress)
 	builder.WriteByte(')')

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
@@ -19,6 +20,34 @@ type IPCreate struct {
 	config
 	mutation *IPMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the created_at field.
+func (ic *IPCreate) SetCreatedAt(t time.Time) *IPCreate {
+	ic.mutation.SetCreatedAt(t)
+	return ic
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (ic *IPCreate) SetNillableCreatedAt(t *time.Time) *IPCreate {
+	if t != nil {
+		ic.SetCreatedAt(*t)
+	}
+	return ic
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (ic *IPCreate) SetUpdatedAt(t time.Time) *IPCreate {
+	ic.mutation.SetUpdatedAt(t)
+	return ic
+}
+
+// SetNillableUpdatedAt sets the updated_at field if the given value is not nil.
+func (ic *IPCreate) SetNillableUpdatedAt(t *time.Time) *IPCreate {
+	if t != nil {
+		ic.SetUpdatedAt(*t)
+	}
+	return ic
 }
 
 // SetIPAddress sets the ip_address field.
@@ -100,6 +129,14 @@ func (ic *IPCreate) SaveX(ctx context.Context) *IP {
 
 // defaults sets the default values of the builder before save.
 func (ic *IPCreate) defaults() {
+	if _, ok := ic.mutation.CreatedAt(); !ok {
+		v := ip.DefaultCreatedAt()
+		ic.mutation.SetCreatedAt(v)
+	}
+	if _, ok := ic.mutation.UpdatedAt(); !ok {
+		v := ip.DefaultUpdatedAt()
+		ic.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := ic.mutation.ID(); !ok {
 		v := ip.DefaultID()
 		ic.mutation.SetID(v)
@@ -108,6 +145,12 @@ func (ic *IPCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *IPCreate) check() error {
+	if _, ok := ic.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New("ent: missing required field \"created_at\"")}
+	}
+	if _, ok := ic.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New("ent: missing required field \"updated_at\"")}
+	}
 	if _, ok := ic.mutation.IPAddress(); !ok {
 		return &ValidationError{Name: "ip_address", err: errors.New("ent: missing required field \"ip_address\"")}
 	}
@@ -139,6 +182,22 @@ func (ic *IPCreate) createSpec() (*IP, *sqlgraph.CreateSpec) {
 	if id, ok := ic.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := ic.mutation.CreatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: ip.FieldCreatedAt,
+		})
+		_node.CreatedAt = value
+	}
+	if value, ok := ic.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: ip.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
 	}
 	if value, ok := ic.mutation.IPAddress(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

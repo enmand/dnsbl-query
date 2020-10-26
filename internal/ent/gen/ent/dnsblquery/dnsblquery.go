@@ -3,6 +3,8 @@
 package dnsblquery
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -11,6 +13,10 @@ const (
 	Label = "dnsbl_query"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 
 	// EdgeResponses holds the string denoting the responses edge name in mutations.
 	EdgeResponses = "responses"
@@ -38,6 +44,8 @@ const (
 // Columns holds all SQL columns for dnsblquery fields.
 var Columns = []string{
 	FieldID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the DNSBLQuery type.
@@ -61,6 +69,12 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCreatedAt holds the default value on creation for the created_at field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the id field.
 	DefaultID func() uuid.UUID
 )

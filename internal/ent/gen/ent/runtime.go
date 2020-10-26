@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"time"
+
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
@@ -16,24 +18,57 @@ import (
 func init() {
 	dnsblqueryMixin := schema.DNSBLQuery{}.Mixin()
 	dnsblqueryMixinFields0 := dnsblqueryMixin[0].Fields()
+	dnsblqueryMixinFields1 := dnsblqueryMixin[1].Fields()
 	dnsblqueryFields := schema.DNSBLQuery{}.Fields()
 	_ = dnsblqueryFields
+	// dnsblqueryDescCreatedAt is the schema descriptor for created_at field.
+	dnsblqueryDescCreatedAt := dnsblqueryMixinFields1[0].Descriptor()
+	// dnsblquery.DefaultCreatedAt holds the default value on creation for the created_at field.
+	dnsblquery.DefaultCreatedAt = dnsblqueryDescCreatedAt.Default.(func() time.Time)
+	// dnsblqueryDescUpdatedAt is the schema descriptor for updated_at field.
+	dnsblqueryDescUpdatedAt := dnsblqueryMixinFields1[1].Descriptor()
+	// dnsblquery.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	dnsblquery.DefaultUpdatedAt = dnsblqueryDescUpdatedAt.Default.(func() time.Time)
+	// dnsblquery.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	dnsblquery.UpdateDefaultUpdatedAt = dnsblqueryDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// dnsblqueryDescID is the schema descriptor for id field.
 	dnsblqueryDescID := dnsblqueryMixinFields0[0].Descriptor()
 	// dnsblquery.DefaultID holds the default value on creation for the id field.
 	dnsblquery.DefaultID = dnsblqueryDescID.Default.(func() uuid.UUID)
 	dnsblresponseMixin := schema.DNSBLResponse{}.Mixin()
 	dnsblresponseMixinFields0 := dnsblresponseMixin[0].Fields()
+	dnsblresponseMixinFields1 := dnsblresponseMixin[1].Fields()
 	dnsblresponseFields := schema.DNSBLResponse{}.Fields()
 	_ = dnsblresponseFields
+	// dnsblresponseDescCreatedAt is the schema descriptor for created_at field.
+	dnsblresponseDescCreatedAt := dnsblresponseMixinFields1[0].Descriptor()
+	// dnsblresponse.DefaultCreatedAt holds the default value on creation for the created_at field.
+	dnsblresponse.DefaultCreatedAt = dnsblresponseDescCreatedAt.Default.(func() time.Time)
+	// dnsblresponseDescUpdatedAt is the schema descriptor for updated_at field.
+	dnsblresponseDescUpdatedAt := dnsblresponseMixinFields1[1].Descriptor()
+	// dnsblresponse.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	dnsblresponse.DefaultUpdatedAt = dnsblresponseDescUpdatedAt.Default.(func() time.Time)
+	// dnsblresponse.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	dnsblresponse.UpdateDefaultUpdatedAt = dnsblresponseDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// dnsblresponseDescID is the schema descriptor for id field.
 	dnsblresponseDescID := dnsblresponseMixinFields0[0].Descriptor()
 	// dnsblresponse.DefaultID holds the default value on creation for the id field.
 	dnsblresponse.DefaultID = dnsblresponseDescID.Default.(func() uuid.UUID)
 	ipMixin := schema.IP{}.Mixin()
 	ipMixinFields0 := ipMixin[0].Fields()
+	ipMixinFields1 := ipMixin[1].Fields()
 	ipFields := schema.IP{}.Fields()
 	_ = ipFields
+	// ipDescCreatedAt is the schema descriptor for created_at field.
+	ipDescCreatedAt := ipMixinFields1[0].Descriptor()
+	// ip.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ip.DefaultCreatedAt = ipDescCreatedAt.Default.(func() time.Time)
+	// ipDescUpdatedAt is the schema descriptor for updated_at field.
+	ipDescUpdatedAt := ipMixinFields1[1].Descriptor()
+	// ip.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	ip.DefaultUpdatedAt = ipDescUpdatedAt.Default.(func() time.Time)
+	// ip.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	ip.UpdateDefaultUpdatedAt = ipDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// ipDescID is the schema descriptor for id field.
 	ipDescID := ipMixinFields0[0].Descriptor()
 	// ip.DefaultID holds the default value on creation for the id field.

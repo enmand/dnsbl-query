@@ -46,8 +46,25 @@ func (dq *DNSBLQuery) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     dq.ID,
 		Type:   "DNSBLQuery",
-		Fields: make([]*Field, 0),
+		Fields: make([]*Field, 2),
 		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(dq.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(dq.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
 		Type: "DNSBLResponse",
@@ -76,14 +93,30 @@ func (dr *DNSBLResponse) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     dr.ID,
 		Type:   "DNSBLResponse",
-		Fields: make([]*Field, 2),
+		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(dr.Code); err != nil {
+	if buf, err = json.Marshal(dr.CreatedAt); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(dr.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(dr.Code); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "code",
 		Value: string(buf),
@@ -91,7 +124,7 @@ func (dr *DNSBLResponse) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(dr.Description); err != nil {
 		return nil, err
 	}
-	node.Fields[1] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "description",
 		Value: string(buf),
@@ -113,14 +146,30 @@ func (i *IP) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     i.ID,
 		Type:   "IP",
-		Fields: make([]*Field, 1),
+		Fields: make([]*Field, 3),
 		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(i.IPAddress); err != nil {
+	if buf, err = json.Marshal(i.CreatedAt); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.IPAddress); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
 		Type:  "string",
 		Name:  "ip_address",
 		Value: string(buf),

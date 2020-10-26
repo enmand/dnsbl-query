@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
@@ -20,6 +21,34 @@ type DNSBLQueryCreate struct {
 	config
 	mutation *DNSBLQueryMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the created_at field.
+func (dqc *DNSBLQueryCreate) SetCreatedAt(t time.Time) *DNSBLQueryCreate {
+	dqc.mutation.SetCreatedAt(t)
+	return dqc
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (dqc *DNSBLQueryCreate) SetNillableCreatedAt(t *time.Time) *DNSBLQueryCreate {
+	if t != nil {
+		dqc.SetCreatedAt(*t)
+	}
+	return dqc
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (dqc *DNSBLQueryCreate) SetUpdatedAt(t time.Time) *DNSBLQueryCreate {
+	dqc.mutation.SetUpdatedAt(t)
+	return dqc
+}
+
+// SetNillableUpdatedAt sets the updated_at field if the given value is not nil.
+func (dqc *DNSBLQueryCreate) SetNillableUpdatedAt(t *time.Time) *DNSBLQueryCreate {
+	if t != nil {
+		dqc.SetUpdatedAt(*t)
+	}
+	return dqc
 }
 
 // SetID sets the id field.
@@ -106,6 +135,14 @@ func (dqc *DNSBLQueryCreate) SaveX(ctx context.Context) *DNSBLQuery {
 
 // defaults sets the default values of the builder before save.
 func (dqc *DNSBLQueryCreate) defaults() {
+	if _, ok := dqc.mutation.CreatedAt(); !ok {
+		v := dnsblquery.DefaultCreatedAt()
+		dqc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := dqc.mutation.UpdatedAt(); !ok {
+		v := dnsblquery.DefaultUpdatedAt()
+		dqc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := dqc.mutation.ID(); !ok {
 		v := dnsblquery.DefaultID()
 		dqc.mutation.SetID(v)
@@ -114,6 +151,12 @@ func (dqc *DNSBLQueryCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (dqc *DNSBLQueryCreate) check() error {
+	if _, ok := dqc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New("ent: missing required field \"created_at\"")}
+	}
+	if _, ok := dqc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New("ent: missing required field \"updated_at\"")}
+	}
 	if _, ok := dqc.mutation.IPAddressID(); !ok {
 		return &ValidationError{Name: "ip_address", err: errors.New("ent: missing required edge \"ip_address\"")}
 	}
@@ -145,6 +188,22 @@ func (dqc *DNSBLQueryCreate) createSpec() (*DNSBLQuery, *sqlgraph.CreateSpec) {
 	if id, ok := dqc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := dqc.mutation.CreatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblquery.FieldCreatedAt,
+		})
+		_node.CreatedAt = value
+	}
+	if value, ok := dqc.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblquery.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
 	}
 	if nodes := dqc.mutation.ResponsesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
