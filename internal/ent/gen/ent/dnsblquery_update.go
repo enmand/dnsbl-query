@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
@@ -27,6 +28,26 @@ type DNSBLQueryUpdate struct {
 // Where adds a new predicate for the builder.
 func (dqu *DNSBLQueryUpdate) Where(ps ...predicate.DNSBLQuery) *DNSBLQueryUpdate {
 	dqu.mutation.predicates = append(dqu.mutation.predicates, ps...)
+	return dqu
+}
+
+// SetCreatedAt sets the created_at field.
+func (dqu *DNSBLQueryUpdate) SetCreatedAt(t time.Time) *DNSBLQueryUpdate {
+	dqu.mutation.SetCreatedAt(t)
+	return dqu
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (dqu *DNSBLQueryUpdate) SetNillableCreatedAt(t *time.Time) *DNSBLQueryUpdate {
+	if t != nil {
+		dqu.SetCreatedAt(*t)
+	}
+	return dqu
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (dqu *DNSBLQueryUpdate) SetUpdatedAt(t time.Time) *DNSBLQueryUpdate {
+	dqu.mutation.SetUpdatedAt(t)
 	return dqu
 }
 
@@ -94,6 +115,7 @@ func (dqu *DNSBLQueryUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	dqu.defaults()
 	if len(dqu.hooks) == 0 {
 		if err = dqu.check(); err != nil {
 			return 0, err
@@ -145,6 +167,14 @@ func (dqu *DNSBLQueryUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (dqu *DNSBLQueryUpdate) defaults() {
+	if _, ok := dqu.mutation.UpdatedAt(); !ok {
+		v := dnsblquery.UpdateDefaultUpdatedAt()
+		dqu.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (dqu *DNSBLQueryUpdate) check() error {
 	if _, ok := dqu.mutation.IPAddressID(); dqu.mutation.IPAddressCleared() && !ok {
@@ -170,6 +200,20 @@ func (dqu *DNSBLQueryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dqu.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblquery.FieldCreatedAt,
+		})
+	}
+	if value, ok := dqu.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblquery.FieldUpdatedAt,
+		})
 	}
 	if dqu.mutation.ResponsesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -278,6 +322,26 @@ type DNSBLQueryUpdateOne struct {
 	mutation *DNSBLQueryMutation
 }
 
+// SetCreatedAt sets the created_at field.
+func (dquo *DNSBLQueryUpdateOne) SetCreatedAt(t time.Time) *DNSBLQueryUpdateOne {
+	dquo.mutation.SetCreatedAt(t)
+	return dquo
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (dquo *DNSBLQueryUpdateOne) SetNillableCreatedAt(t *time.Time) *DNSBLQueryUpdateOne {
+	if t != nil {
+		dquo.SetCreatedAt(*t)
+	}
+	return dquo
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (dquo *DNSBLQueryUpdateOne) SetUpdatedAt(t time.Time) *DNSBLQueryUpdateOne {
+	dquo.mutation.SetUpdatedAt(t)
+	return dquo
+}
+
 // AddResponseIDs adds the responses edge to DNSBLResponse by ids.
 func (dquo *DNSBLQueryUpdateOne) AddResponseIDs(ids ...uuid.UUID) *DNSBLQueryUpdateOne {
 	dquo.mutation.AddResponseIDs(ids...)
@@ -342,6 +406,7 @@ func (dquo *DNSBLQueryUpdateOne) Save(ctx context.Context) (*DNSBLQuery, error) 
 		err  error
 		node *DNSBLQuery
 	)
+	dquo.defaults()
 	if len(dquo.hooks) == 0 {
 		if err = dquo.check(); err != nil {
 			return nil, err
@@ -393,6 +458,14 @@ func (dquo *DNSBLQueryUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (dquo *DNSBLQueryUpdateOne) defaults() {
+	if _, ok := dquo.mutation.UpdatedAt(); !ok {
+		v := dnsblquery.UpdateDefaultUpdatedAt()
+		dquo.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (dquo *DNSBLQueryUpdateOne) check() error {
 	if _, ok := dquo.mutation.IPAddressID(); dquo.mutation.IPAddressCleared() && !ok {
@@ -417,6 +490,20 @@ func (dquo *DNSBLQueryUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLQuery
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing DNSBLQuery.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if value, ok := dquo.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblquery.FieldCreatedAt,
+		})
+	}
+	if value, ok := dquo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblquery.FieldUpdatedAt,
+		})
+	}
 	if dquo.mutation.ResponsesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,

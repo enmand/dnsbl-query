@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
@@ -17,6 +18,10 @@ type DNSBLResponse struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Description holds the value of the "description" field.
@@ -54,6 +59,8 @@ func (e DNSBLResponseEdges) QueryOrErr() (*DNSBLQuery, error) {
 func (*DNSBLResponse) scanValues() []interface{} {
 	return []interface{}{
 		&uuid.UUID{},      // id
+		&sql.NullTime{},   // created_at
+		&sql.NullTime{},   // updated_at
 		&sql.NullString{}, // code
 		&sql.NullString{}, // description
 	}
@@ -78,17 +85,27 @@ func (dr *DNSBLResponse) assignValues(values ...interface{}) error {
 		dr.ID = *value
 	}
 	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field code", values[0])
+	if value, ok := values[0].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field created_at", values[0])
+	} else if value.Valid {
+		dr.CreatedAt = value.Time
+	}
+	if value, ok := values[1].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field updated_at", values[1])
+	} else if value.Valid {
+		dr.UpdatedAt = value.Time
+	}
+	if value, ok := values[2].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field code", values[2])
 	} else if value.Valid {
 		dr.Code = value.String
 	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[1])
+	if value, ok := values[3].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field description", values[3])
 	} else if value.Valid {
 		dr.Description = value.String
 	}
-	values = values[2:]
+	values = values[4:]
 	if len(values) == len(dnsblresponse.ForeignKeys) {
 		if value, ok := values[0].(*uuid.UUID); !ok {
 			return fmt.Errorf("unexpected type %T for field dnsbl_query_responses", values[0])
@@ -127,6 +144,10 @@ func (dr *DNSBLResponse) String() string {
 	var builder strings.Builder
 	builder.WriteString("DNSBLResponse(")
 	builder.WriteString(fmt.Sprintf("id=%v", dr.ID))
+	builder.WriteString(", created_at=")
+	builder.WriteString(dr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", updated_at=")
+	builder.WriteString(dr.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", code=")
 	builder.WriteString(dr.Code)
 	builder.WriteString(", description=")

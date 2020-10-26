@@ -11,6 +11,8 @@ var (
 	// DnsblQueriesColumns holds the columns for the "dnsbl_queries" table.
 	DnsblQueriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "ip_queries", Type: field.TypeUUID, Nullable: true},
 	}
 	// DnsblQueriesTable holds the schema information for the "dnsbl_queries" table.
@@ -21,16 +23,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "dnsbl_queries_ips_queries",
-				Columns: []*schema.Column{DnsblQueriesColumns[1]},
+				Columns: []*schema.Column{DnsblQueriesColumns[3]},
 
 				RefColumns: []*schema.Column{IpsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dnsblquery_updated_at_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{DnsblQueriesColumns[2], DnsblQueriesColumns[1]},
 			},
 		},
 	}
 	// DnsblResponsesColumns holds the columns for the "dnsbl_responses" table.
 	DnsblResponsesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "code", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
 		{Name: "dnsbl_query_responses", Type: field.TypeUUID, Nullable: true},
@@ -43,16 +54,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "dnsbl_responses_dnsbl_queries_responses",
-				Columns: []*schema.Column{DnsblResponsesColumns[3]},
+				Columns: []*schema.Column{DnsblResponsesColumns[5]},
 
 				RefColumns: []*schema.Column{DnsblQueriesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dnsblresponse_updated_at_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{DnsblResponsesColumns[2], DnsblResponsesColumns[1]},
 			},
 		},
 	}
 	// IpsColumns holds the columns for the "ips" table.
 	IpsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "ip_address", Type: field.TypeString},
 	}
 	// IpsTable holds the schema information for the "ips" table.
@@ -61,6 +81,13 @@ var (
 		Columns:     IpsColumns,
 		PrimaryKey:  []*schema.Column{IpsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{},
+		Indexes: []*schema.Index{
+			{
+				Name:    "ip_updated_at_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{IpsColumns[2], IpsColumns[1]},
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

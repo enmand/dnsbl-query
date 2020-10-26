@@ -5,17 +5,23 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
+	"github.com/facebook/ent/dialect/sql"
 	"github.com/google/uuid"
 )
 
 // DNSBLQuery is the model entity for the DNSBLQuery schema.
 type DNSBLQuery struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DNSBLQueryQuery when eager-loading is set.
 	Edges      DNSBLQueryEdges `json:"edges"`
@@ -59,7 +65,9 @@ func (e DNSBLQueryEdges) IPAddressOrErr() (*IP, error) {
 // scanValues returns the types for scanning values from sql.Rows.
 func (*DNSBLQuery) scanValues() []interface{} {
 	return []interface{}{
-		&uuid.UUID{}, // id
+		&uuid.UUID{},    // id
+		&sql.NullTime{}, // created_at
+		&sql.NullTime{}, // updated_at
 	}
 }
 
@@ -82,6 +90,17 @@ func (dq *DNSBLQuery) assignValues(values ...interface{}) error {
 		dq.ID = *value
 	}
 	values = values[1:]
+	if value, ok := values[0].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field created_at", values[0])
+	} else if value.Valid {
+		dq.CreatedAt = value.Time
+	}
+	if value, ok := values[1].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field updated_at", values[1])
+	} else if value.Valid {
+		dq.UpdatedAt = value.Time
+	}
+	values = values[2:]
 	if len(values) == len(dnsblquery.ForeignKeys) {
 		if value, ok := values[0].(*uuid.UUID); !ok {
 			return fmt.Errorf("unexpected type %T for field ip_queries", values[0])
@@ -125,6 +144,10 @@ func (dq *DNSBLQuery) String() string {
 	var builder strings.Builder
 	builder.WriteString("DNSBLQuery(")
 	builder.WriteString(fmt.Sprintf("id=%v", dq.ID))
+	builder.WriteString(", created_at=")
+	builder.WriteString(dq.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", updated_at=")
+	builder.WriteString(dq.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

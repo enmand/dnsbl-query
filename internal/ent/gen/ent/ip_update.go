@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
@@ -25,6 +26,26 @@ type IPUpdate struct {
 // Where adds a new predicate for the builder.
 func (iu *IPUpdate) Where(ps ...predicate.IP) *IPUpdate {
 	iu.mutation.predicates = append(iu.mutation.predicates, ps...)
+	return iu
+}
+
+// SetCreatedAt sets the created_at field.
+func (iu *IPUpdate) SetCreatedAt(t time.Time) *IPUpdate {
+	iu.mutation.SetCreatedAt(t)
+	return iu
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (iu *IPUpdate) SetNillableCreatedAt(t *time.Time) *IPUpdate {
+	if t != nil {
+		iu.SetCreatedAt(*t)
+	}
+	return iu
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (iu *IPUpdate) SetUpdatedAt(t time.Time) *IPUpdate {
+	iu.mutation.SetUpdatedAt(t)
 	return iu
 }
 
@@ -81,6 +102,7 @@ func (iu *IPUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	iu.defaults()
 	if len(iu.hooks) == 0 {
 		affected, err = iu.sqlSave(ctx)
 	} else {
@@ -126,6 +148,14 @@ func (iu *IPUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (iu *IPUpdate) defaults() {
+	if _, ok := iu.mutation.UpdatedAt(); !ok {
+		v := ip.UpdateDefaultUpdatedAt()
+		iu.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (iu *IPUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -143,6 +173,20 @@ func (iu *IPUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := iu.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: ip.FieldCreatedAt,
+		})
+	}
+	if value, ok := iu.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: ip.FieldUpdatedAt,
+		})
 	}
 	if value, ok := iu.mutation.IPAddress(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -223,6 +267,26 @@ type IPUpdateOne struct {
 	mutation *IPMutation
 }
 
+// SetCreatedAt sets the created_at field.
+func (iuo *IPUpdateOne) SetCreatedAt(t time.Time) *IPUpdateOne {
+	iuo.mutation.SetCreatedAt(t)
+	return iuo
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (iuo *IPUpdateOne) SetNillableCreatedAt(t *time.Time) *IPUpdateOne {
+	if t != nil {
+		iuo.SetCreatedAt(*t)
+	}
+	return iuo
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (iuo *IPUpdateOne) SetUpdatedAt(t time.Time) *IPUpdateOne {
+	iuo.mutation.SetUpdatedAt(t)
+	return iuo
+}
+
 // SetIPAddress sets the ip_address field.
 func (iuo *IPUpdateOne) SetIPAddress(s string) *IPUpdateOne {
 	iuo.mutation.SetIPAddress(s)
@@ -276,6 +340,7 @@ func (iuo *IPUpdateOne) Save(ctx context.Context) (*IP, error) {
 		err  error
 		node *IP
 	)
+	iuo.defaults()
 	if len(iuo.hooks) == 0 {
 		node, err = iuo.sqlSave(ctx)
 	} else {
@@ -321,6 +386,14 @@ func (iuo *IPUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (iuo *IPUpdateOne) defaults() {
+	if _, ok := iuo.mutation.UpdatedAt(); !ok {
+		v := ip.UpdateDefaultUpdatedAt()
+		iuo.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (iuo *IPUpdateOne) sqlSave(ctx context.Context) (_node *IP, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -337,6 +410,20 @@ func (iuo *IPUpdateOne) sqlSave(ctx context.Context) (_node *IP, err error) {
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing IP.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if value, ok := iuo.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: ip.FieldCreatedAt,
+		})
+	}
+	if value, ok := iuo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: ip.FieldUpdatedAt,
+		})
+	}
 	if value, ok := iuo.mutation.IPAddress(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

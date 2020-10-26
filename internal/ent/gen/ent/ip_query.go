@@ -275,12 +275,12 @@ func (iq *IPQuery) WithQueries(opts ...func(*DNSBLQueryQuery)) *IPQuery {
 // Example:
 //
 //	var v []struct {
-//		IPAddress string `json:"ip_address,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IP.Query().
-//		GroupBy(ip.FieldIPAddress).
+//		GroupBy(ip.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -301,11 +301,11 @@ func (iq *IPQuery) GroupBy(field string, fields ...string) *IPGroupBy {
 // Example:
 //
 //	var v []struct {
-//		IPAddress string `json:"ip_address,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
 //	client.IP.Query().
-//		Select(ip.FieldIPAddress).
+//		Select(ip.FieldCreatedAt).
 //		Scan(ctx, &v)
 //
 func (iq *IPQuery) Select(field string, fields ...string) *IPSelect {

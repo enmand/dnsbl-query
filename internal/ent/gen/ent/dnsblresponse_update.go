@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
@@ -26,6 +27,26 @@ type DNSBLResponseUpdate struct {
 // Where adds a new predicate for the builder.
 func (dru *DNSBLResponseUpdate) Where(ps ...predicate.DNSBLResponse) *DNSBLResponseUpdate {
 	dru.mutation.predicates = append(dru.mutation.predicates, ps...)
+	return dru
+}
+
+// SetCreatedAt sets the created_at field.
+func (dru *DNSBLResponseUpdate) SetCreatedAt(t time.Time) *DNSBLResponseUpdate {
+	dru.mutation.SetCreatedAt(t)
+	return dru
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (dru *DNSBLResponseUpdate) SetNillableCreatedAt(t *time.Time) *DNSBLResponseUpdate {
+	if t != nil {
+		dru.SetCreatedAt(*t)
+	}
+	return dru
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (dru *DNSBLResponseUpdate) SetUpdatedAt(t time.Time) *DNSBLResponseUpdate {
+	dru.mutation.SetUpdatedAt(t)
 	return dru
 }
 
@@ -69,6 +90,7 @@ func (dru *DNSBLResponseUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	dru.defaults()
 	if len(dru.hooks) == 0 {
 		if err = dru.check(); err != nil {
 			return 0, err
@@ -120,6 +142,14 @@ func (dru *DNSBLResponseUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (dru *DNSBLResponseUpdate) defaults() {
+	if _, ok := dru.mutation.UpdatedAt(); !ok {
+		v := dnsblresponse.UpdateDefaultUpdatedAt()
+		dru.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (dru *DNSBLResponseUpdate) check() error {
 	if _, ok := dru.mutation.QueryID(); dru.mutation.QueryCleared() && !ok {
@@ -145,6 +175,20 @@ func (dru *DNSBLResponseUpdate) sqlSave(ctx context.Context) (n int, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dru.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblresponse.FieldCreatedAt,
+		})
+	}
+	if value, ok := dru.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblresponse.FieldUpdatedAt,
+		})
 	}
 	if value, ok := dru.mutation.Code(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -213,6 +257,26 @@ type DNSBLResponseUpdateOne struct {
 	mutation *DNSBLResponseMutation
 }
 
+// SetCreatedAt sets the created_at field.
+func (druo *DNSBLResponseUpdateOne) SetCreatedAt(t time.Time) *DNSBLResponseUpdateOne {
+	druo.mutation.SetCreatedAt(t)
+	return druo
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (druo *DNSBLResponseUpdateOne) SetNillableCreatedAt(t *time.Time) *DNSBLResponseUpdateOne {
+	if t != nil {
+		druo.SetCreatedAt(*t)
+	}
+	return druo
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (druo *DNSBLResponseUpdateOne) SetUpdatedAt(t time.Time) *DNSBLResponseUpdateOne {
+	druo.mutation.SetUpdatedAt(t)
+	return druo
+}
+
 // SetCode sets the code field.
 func (druo *DNSBLResponseUpdateOne) SetCode(s string) *DNSBLResponseUpdateOne {
 	druo.mutation.SetCode(s)
@@ -253,6 +317,7 @@ func (druo *DNSBLResponseUpdateOne) Save(ctx context.Context) (*DNSBLResponse, e
 		err  error
 		node *DNSBLResponse
 	)
+	druo.defaults()
 	if len(druo.hooks) == 0 {
 		if err = druo.check(); err != nil {
 			return nil, err
@@ -304,6 +369,14 @@ func (druo *DNSBLResponseUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (druo *DNSBLResponseUpdateOne) defaults() {
+	if _, ok := druo.mutation.UpdatedAt(); !ok {
+		v := dnsblresponse.UpdateDefaultUpdatedAt()
+		druo.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (druo *DNSBLResponseUpdateOne) check() error {
 	if _, ok := druo.mutation.QueryID(); druo.mutation.QueryCleared() && !ok {
@@ -328,6 +401,20 @@ func (druo *DNSBLResponseUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLRe
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing DNSBLResponse.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if value, ok := druo.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblresponse.FieldCreatedAt,
+		})
+	}
+	if value, ok := druo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblresponse.FieldUpdatedAt,
+		})
+	}
 	if value, ok := druo.mutation.Code(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

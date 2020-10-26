@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
@@ -19,6 +20,34 @@ type DNSBLResponseCreate struct {
 	config
 	mutation *DNSBLResponseMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the created_at field.
+func (drc *DNSBLResponseCreate) SetCreatedAt(t time.Time) *DNSBLResponseCreate {
+	drc.mutation.SetCreatedAt(t)
+	return drc
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (drc *DNSBLResponseCreate) SetNillableCreatedAt(t *time.Time) *DNSBLResponseCreate {
+	if t != nil {
+		drc.SetCreatedAt(*t)
+	}
+	return drc
+}
+
+// SetUpdatedAt sets the updated_at field.
+func (drc *DNSBLResponseCreate) SetUpdatedAt(t time.Time) *DNSBLResponseCreate {
+	drc.mutation.SetUpdatedAt(t)
+	return drc
+}
+
+// SetNillableUpdatedAt sets the updated_at field if the given value is not nil.
+func (drc *DNSBLResponseCreate) SetNillableUpdatedAt(t *time.Time) *DNSBLResponseCreate {
+	if t != nil {
+		drc.SetUpdatedAt(*t)
+	}
+	return drc
 }
 
 // SetCode sets the code field.
@@ -102,6 +131,14 @@ func (drc *DNSBLResponseCreate) SaveX(ctx context.Context) *DNSBLResponse {
 
 // defaults sets the default values of the builder before save.
 func (drc *DNSBLResponseCreate) defaults() {
+	if _, ok := drc.mutation.CreatedAt(); !ok {
+		v := dnsblresponse.DefaultCreatedAt()
+		drc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := drc.mutation.UpdatedAt(); !ok {
+		v := dnsblresponse.DefaultUpdatedAt()
+		drc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := drc.mutation.ID(); !ok {
 		v := dnsblresponse.DefaultID()
 		drc.mutation.SetID(v)
@@ -110,6 +147,12 @@ func (drc *DNSBLResponseCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (drc *DNSBLResponseCreate) check() error {
+	if _, ok := drc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New("ent: missing required field \"created_at\"")}
+	}
+	if _, ok := drc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New("ent: missing required field \"updated_at\"")}
+	}
 	if _, ok := drc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New("ent: missing required field \"code\"")}
 	}
@@ -147,6 +190,22 @@ func (drc *DNSBLResponseCreate) createSpec() (*DNSBLResponse, *sqlgraph.CreateSp
 	if id, ok := drc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := drc.mutation.CreatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblresponse.FieldCreatedAt,
+		})
+		_node.CreatedAt = value
+	}
+	if value, ok := drc.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: dnsblresponse.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
 	}
 	if value, ok := drc.mutation.Code(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
