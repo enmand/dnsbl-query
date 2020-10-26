@@ -8,13 +8,14 @@ import (
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 	"github.com/facebook/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // IP is the model entity for the IP schema.
 type IP struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID string `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// IPAddress holds the value of the "ip_address" field.
 	IPAddress string `json:"ip_address,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -43,7 +44,7 @@ func (e IPEdges) QueriesOrErr() ([]*DNSBLQuery, error) {
 // scanValues returns the types for scanning values from sql.Rows.
 func (*IP) scanValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{},  // id
+		&uuid.UUID{},      // id
 		&sql.NullString{}, // ip_address
 	}
 }
@@ -54,11 +55,11 @@ func (i *IP) assignValues(values ...interface{}) error {
 	if m, n := len(values), len(ip.Columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
+	if value, ok := values[0].(*uuid.UUID); !ok {
+		return fmt.Errorf("unexpected type %T for field id", values[0])
+	} else if value != nil {
+		i.ID = *value
 	}
-	i.ID = string(value.Int64)
 	values = values[1:]
 	if value, ok := values[0].(*sql.NullString); !ok {
 		return fmt.Errorf("unexpected type %T for field ip_address", values[0])

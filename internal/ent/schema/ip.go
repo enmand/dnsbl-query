@@ -23,7 +23,7 @@ func (IP) Fields() []ent.Field {
 }
 
 // Mixins are the ent.Mixins that are used with the IP entity
-func (IP) Mixins() []ent.Mixin {
+func (IP) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.ID{},
 		mixin.Timed{},

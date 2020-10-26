@@ -21,7 +21,7 @@ func (DNSBLResponse) Fields() []ent.Field {
 }
 
 // Mixins are the field mixins for the DNSBLResponse entity
-func (DNSBLResponse) Mixins() []ent.Mixin {
+func (DNSBLResponse) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.ID{},
 		mixin.Timed{},
@@ -29,10 +29,11 @@ func (DNSBLResponse) Mixins() []ent.Mixin {
 }
 
 // Edges are the entity edges for the DNSBLResponse entity in the graph
-func (DNSBLResponse) Edge() []ent.Edge {
+func (DNSBLResponse) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("query", DNSBLQuery.Type).
 			Ref("responses").
-			Unique(),
+			Unique().
+			Required(),
 	}
 }

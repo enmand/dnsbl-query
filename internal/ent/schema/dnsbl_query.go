@@ -13,7 +13,7 @@ type DNSBLQuery struct {
 }
 
 // Mixins are the field mixins for the DNSBLQuery entity
-func (DNSBLQuery) Mixins() []ent.Mixin {
+func (DNSBLQuery) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.ID{},
 		mixin.Timed{},
@@ -26,6 +26,7 @@ func (DNSBLQuery) Edges() []ent.Edge {
 		edge.To("responses", DNSBLResponse.Type),
 		edge.From("ip_address", IP.Type).
 			Ref("queries").
-			Unique(),
+			Unique().
+			Required(),
 	}
 }

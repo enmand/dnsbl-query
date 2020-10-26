@@ -6,26 +6,54 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/facebook/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // DNSBLResponse is the model entity for the DNSBLResponse schema.
 type DNSBLResponse struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID string `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Description holds the value of the "description" field.
-	Description           string `json:"description,omitempty"`
-	dnsbl_query_responses *string
+	Description string `json:"description,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the DNSBLResponseQuery when eager-loading is set.
+	Edges                 DNSBLResponseEdges `json:"edges"`
+	dnsbl_query_responses *uuid.UUID
+}
+
+// DNSBLResponseEdges holds the relations/edges for other nodes in the graph.
+type DNSBLResponseEdges struct {
+	// Query holds the value of the query edge.
+	Query *DNSBLQuery
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// QueryOrErr returns the Query value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DNSBLResponseEdges) QueryOrErr() (*DNSBLQuery, error) {
+	if e.loadedTypes[0] {
+		if e.Query == nil {
+			// The edge query was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: dnsblquery.Label}
+		}
+		return e.Query, nil
+	}
+	return nil, &NotLoadedError{edge: "query"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
 func (*DNSBLResponse) scanValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{},  // id
+		&uuid.UUID{},      // id
 		&sql.NullString{}, // code
 		&sql.NullString{}, // description
 	}
@@ -34,7 +62,7 @@ func (*DNSBLResponse) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*DNSBLResponse) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // dnsbl_query_responses
+		&uuid.UUID{}, // dnsbl_query_responses
 	}
 }
 
@@ -44,11 +72,11 @@ func (dr *DNSBLResponse) assignValues(values ...interface{}) error {
 	if m, n := len(values), len(dnsblresponse.Columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
+	if value, ok := values[0].(*uuid.UUID); !ok {
+		return fmt.Errorf("unexpected type %T for field id", values[0])
+	} else if value != nil {
+		dr.ID = *value
 	}
-	dr.ID = string(value.Int64)
 	values = values[1:]
 	if value, ok := values[0].(*sql.NullString); !ok {
 		return fmt.Errorf("unexpected type %T for field code", values[0])
@@ -62,14 +90,18 @@ func (dr *DNSBLResponse) assignValues(values ...interface{}) error {
 	}
 	values = values[2:]
 	if len(values) == len(dnsblresponse.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field dnsbl_query_responses", value)
-		} else if value.Valid {
-			dr.dnsbl_query_responses = new(string)
-			*dr.dnsbl_query_responses = string(value.Int64)
+		if value, ok := values[0].(*uuid.UUID); !ok {
+			return fmt.Errorf("unexpected type %T for field dnsbl_query_responses", values[0])
+		} else if value != nil {
+			dr.dnsbl_query_responses = value
 		}
 	}
 	return nil
+}
+
+// QueryQuery queries the query edge of the DNSBLResponse.
+func (dr *DNSBLResponse) QueryQuery() *DNSBLQueryQuery {
+	return (&DNSBLResponseClient{config: dr.config}).QueryQuery(dr)
 }
 
 // Update returns a builder for updating this DNSBLResponse.

@@ -12,6 +12,7 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // IPUpdate is the builder for updating IP entities.
@@ -34,14 +35,14 @@ func (iu *IPUpdate) SetIPAddress(s string) *IPUpdate {
 }
 
 // AddQueryIDs adds the queries edge to DNSBLQuery by ids.
-func (iu *IPUpdate) AddQueryIDs(ids ...string) *IPUpdate {
+func (iu *IPUpdate) AddQueryIDs(ids ...uuid.UUID) *IPUpdate {
 	iu.mutation.AddQueryIDs(ids...)
 	return iu
 }
 
 // AddQueries adds the queries edges to DNSBLQuery.
 func (iu *IPUpdate) AddQueries(d ...*DNSBLQuery) *IPUpdate {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -60,14 +61,14 @@ func (iu *IPUpdate) ClearQueries() *IPUpdate {
 }
 
 // RemoveQueryIDs removes the queries edge to DNSBLQuery by ids.
-func (iu *IPUpdate) RemoveQueryIDs(ids ...string) *IPUpdate {
+func (iu *IPUpdate) RemoveQueryIDs(ids ...uuid.UUID) *IPUpdate {
 	iu.mutation.RemoveQueryIDs(ids...)
 	return iu
 }
 
 // RemoveQueries removes queries edges to DNSBLQuery.
 func (iu *IPUpdate) RemoveQueries(d ...*DNSBLQuery) *IPUpdate {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -131,7 +132,7 @@ func (iu *IPUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   ip.Table,
 			Columns: ip.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: ip.FieldID,
 			},
 		},
@@ -159,7 +160,7 @@ func (iu *IPUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblquery.FieldID,
 				},
 			},
@@ -175,7 +176,7 @@ func (iu *IPUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblquery.FieldID,
 				},
 			},
@@ -194,7 +195,7 @@ func (iu *IPUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblquery.FieldID,
 				},
 			},
@@ -229,14 +230,14 @@ func (iuo *IPUpdateOne) SetIPAddress(s string) *IPUpdateOne {
 }
 
 // AddQueryIDs adds the queries edge to DNSBLQuery by ids.
-func (iuo *IPUpdateOne) AddQueryIDs(ids ...string) *IPUpdateOne {
+func (iuo *IPUpdateOne) AddQueryIDs(ids ...uuid.UUID) *IPUpdateOne {
 	iuo.mutation.AddQueryIDs(ids...)
 	return iuo
 }
 
 // AddQueries adds the queries edges to DNSBLQuery.
 func (iuo *IPUpdateOne) AddQueries(d ...*DNSBLQuery) *IPUpdateOne {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -255,14 +256,14 @@ func (iuo *IPUpdateOne) ClearQueries() *IPUpdateOne {
 }
 
 // RemoveQueryIDs removes the queries edge to DNSBLQuery by ids.
-func (iuo *IPUpdateOne) RemoveQueryIDs(ids ...string) *IPUpdateOne {
+func (iuo *IPUpdateOne) RemoveQueryIDs(ids ...uuid.UUID) *IPUpdateOne {
 	iuo.mutation.RemoveQueryIDs(ids...)
 	return iuo
 }
 
 // RemoveQueries removes queries edges to DNSBLQuery.
 func (iuo *IPUpdateOne) RemoveQueries(d ...*DNSBLQuery) *IPUpdateOne {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -326,7 +327,7 @@ func (iuo *IPUpdateOne) sqlSave(ctx context.Context) (_node *IP, err error) {
 			Table:   ip.Table,
 			Columns: ip.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: ip.FieldID,
 			},
 		},
@@ -352,7 +353,7 @@ func (iuo *IPUpdateOne) sqlSave(ctx context.Context) (_node *IP, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblquery.FieldID,
 				},
 			},
@@ -368,7 +369,7 @@ func (iuo *IPUpdateOne) sqlSave(ctx context.Context) (_node *IP, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblquery.FieldID,
 				},
 			},
@@ -387,7 +388,7 @@ func (iuo *IPUpdateOne) sqlSave(ctx context.Context) (_node *IP, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblquery.FieldID,
 				},
 			},

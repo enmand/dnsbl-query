@@ -2,6 +2,10 @@
 
 package dnsblresponse
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the dnsblresponse type in the database.
 	Label = "dnsbl_response"
@@ -12,8 +16,18 @@ const (
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 
+	// EdgeQuery holds the string denoting the query edge name in mutations.
+	EdgeQuery = "query"
+
 	// Table holds the table name of the dnsblresponse in the database.
 	Table = "dnsbl_responses"
+	// QueryTable is the table the holds the query relation/edge.
+	QueryTable = "dnsbl_responses"
+	// QueryInverseTable is the table name for the DNSBLQuery entity.
+	// It exists in this package in order to avoid circular dependency with the "dnsblquery" package.
+	QueryInverseTable = "dnsbl_queries"
+	// QueryColumn is the table column denoting the query relation/edge.
+	QueryColumn = "dnsbl_query_responses"
 )
 
 // Columns holds all SQL columns for dnsblresponse fields.
@@ -42,3 +56,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the id field.
+	DefaultID func() uuid.UUID
+)

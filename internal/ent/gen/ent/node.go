@@ -11,6 +11,7 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 	"github.com/facebookincubator/ent-contrib/entgql"
+	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
 )
 
@@ -21,10 +22,10 @@ type Noder interface {
 
 // Node in the graph.
 type Node struct {
-	ID     string   `json:"id,omitemty"`      // node id.
-	Type   string   `json:"type,omitempty"`   // node type.
-	Fields []*Field `json:"fields,omitempty"` // node fields.
-	Edges  []*Edge  `json:"edges,omitempty"`  // node edges.
+	ID     uuid.UUID `json:"id,omitemty"`      // node id.
+	Type   string    `json:"type,omitempty"`   // node type.
+	Fields []*Field  `json:"fields,omitempty"` // node fields.
+	Edges  []*Edge   `json:"edges,omitempty"`  // node edges.
 }
 
 // Field of a node.
@@ -36,9 +37,9 @@ type Field struct {
 
 // Edges between two nodes.
 type Edge struct {
-	Type string   `json:"type,omitempty"` // edge type.
-	Name string   `json:"name,omitempty"` // edge name.
-	IDs  []string `json:"ids,omitempty"`  // node ids (where this edge point to).
+	Type string      `json:"type,omitempty"` // edge type.
+	Name string      `json:"name,omitempty"` // edge name.
+	IDs  []uuid.UUID `json:"ids,omitempty"`  // node ids (where this edge point to).
 }
 
 func (dq *DNSBLQuery) Node(ctx context.Context) (node *Node, err error) {
@@ -76,7 +77,7 @@ func (dr *DNSBLResponse) Node(ctx context.Context) (node *Node, err error) {
 		ID:     dr.ID,
 		Type:   "DNSBLResponse",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 0),
+		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(dr.Code); err != nil {
@@ -94,6 +95,16 @@ func (dr *DNSBLResponse) Node(ctx context.Context) (node *Node, err error) {
 		Type:  "string",
 		Name:  "description",
 		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "DNSBLQuery",
+		Name: "query",
+	}
+	err = dr.QueryQuery().
+		Select(dnsblquery.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
 	}
 	return node, nil
 }
@@ -127,7 +138,7 @@ func (i *IP) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (c *Client) Node(ctx context.Context, id string) (*Node, error) {
+func (c *Client) Node(ctx context.Context, id uuid.UUID) (*Node, error) {
 	n, err := c.Noder(ctx, id)
 	if err != nil {
 		return nil, err
@@ -161,7 +172,7 @@ type NodeOptions struct {
 //		c.Noder(ctx, id)
 //		c.Noder(ctx, id, ent.WithNodeType(pet.Table))
 //
-func (c *Client) Noder(ctx context.Context, id string, opts ...NodeOption) (_ Noder, err error) {
+func (c *Client) Noder(ctx context.Context, id uuid.UUID, opts ...NodeOption) (_ Noder, err error) {
 	defer func() {
 		if IsNotFound(err) {
 			err = multierror.Append(err, entgql.ErrNodeNotFound(id))
@@ -177,7 +188,7 @@ func (c *Client) Noder(ctx context.Context, id string, opts ...NodeOption) (_ No
 	return c.noder(ctx, options.Type, id)
 }
 
-func (c *Client) noder(ctx context.Context, tbl string, id string) (Noder, error) {
+func (c *Client) noder(ctx context.Context, tbl string, id uuid.UUID) (Noder, error) {
 	switch tbl {
 	case dnsblquery.Table:
 		n, err := c.DNSBLQuery.Query().

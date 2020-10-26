@@ -10,8 +10,8 @@ import (
 var (
 	// DnsblQueriesColumns holds the columns for the "dnsbl_queries" table.
 	DnsblQueriesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "ip_queries", Type: field.TypeInt, Nullable: true},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "ip_queries", Type: field.TypeUUID, Nullable: true},
 	}
 	// DnsblQueriesTable holds the schema information for the "dnsbl_queries" table.
 	DnsblQueriesTable = &schema.Table{
@@ -30,10 +30,10 @@ var (
 	}
 	// DnsblResponsesColumns holds the columns for the "dnsbl_responses" table.
 	DnsblResponsesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "code", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
-		{Name: "dnsbl_query_responses", Type: field.TypeInt, Nullable: true},
+		{Name: "dnsbl_query_responses", Type: field.TypeUUID, Nullable: true},
 	}
 	// DnsblResponsesTable holds the schema information for the "dnsbl_responses" table.
 	DnsblResponsesTable = &schema.Table{
@@ -52,7 +52,7 @@ var (
 	}
 	// IpsColumns holds the columns for the "ips" table.
 	IpsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "ip_address", Type: field.TypeString},
 	}
 	// IpsTable holds the schema information for the "ips" table.

@@ -5,31 +5,33 @@ package dnsblresponse
 import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/predicate"
 	"github.com/facebook/ent/dialect/sql"
+	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their identifier.
-func ID(id string) predicate.DNSBLResponse {
+func ID(id uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id string) predicate.DNSBLResponse {
+func IDEQ(id uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id string) predicate.DNSBLResponse {
+func IDNEQ(id uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...string) predicate.DNSBLResponse {
+func IDIn(ids ...uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -46,7 +48,7 @@ func IDIn(ids ...string) predicate.DNSBLResponse {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...string) predicate.DNSBLResponse {
+func IDNotIn(ids ...uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -63,28 +65,28 @@ func IDNotIn(ids ...string) predicate.DNSBLResponse {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id string) predicate.DNSBLResponse {
+func IDGT(id uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id string) predicate.DNSBLResponse {
+func IDGTE(id uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id string) predicate.DNSBLResponse {
+func IDLT(id uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id string) predicate.DNSBLResponse {
+func IDLTE(id uuid.UUID) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
 	})
@@ -323,6 +325,34 @@ func DescriptionEqualFold(v string) predicate.DNSBLResponse {
 func DescriptionContainsFold(v string) predicate.DNSBLResponse {
 	return predicate.DNSBLResponse(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldDescription), v))
+	})
+}
+
+// HasQuery applies the HasEdge predicate on the "query" edge.
+func HasQuery() predicate.DNSBLResponse {
+	return predicate.DNSBLResponse(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(QueryTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, QueryTable, QueryColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasQueryWith applies the HasEdge predicate on the "query" edge with a given conditions (other predicates).
+func HasQueryWith(preds ...predicate.DNSBLQuery) predicate.DNSBLResponse {
+	return predicate.DNSBLResponse(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(QueryInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, QueryTable, QueryColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

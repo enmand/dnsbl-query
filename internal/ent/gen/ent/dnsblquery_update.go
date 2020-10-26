@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
@@ -13,6 +14,7 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // DNSBLQueryUpdate is the builder for updating DNSBLQuery entities.
@@ -29,14 +31,14 @@ func (dqu *DNSBLQueryUpdate) Where(ps ...predicate.DNSBLQuery) *DNSBLQueryUpdate
 }
 
 // AddResponseIDs adds the responses edge to DNSBLResponse by ids.
-func (dqu *DNSBLQueryUpdate) AddResponseIDs(ids ...string) *DNSBLQueryUpdate {
+func (dqu *DNSBLQueryUpdate) AddResponseIDs(ids ...uuid.UUID) *DNSBLQueryUpdate {
 	dqu.mutation.AddResponseIDs(ids...)
 	return dqu
 }
 
 // AddResponses adds the responses edges to DNSBLResponse.
 func (dqu *DNSBLQueryUpdate) AddResponses(d ...*DNSBLResponse) *DNSBLQueryUpdate {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -44,16 +46,8 @@ func (dqu *DNSBLQueryUpdate) AddResponses(d ...*DNSBLResponse) *DNSBLQueryUpdate
 }
 
 // SetIPAddressID sets the ip_address edge to IP by id.
-func (dqu *DNSBLQueryUpdate) SetIPAddressID(id string) *DNSBLQueryUpdate {
+func (dqu *DNSBLQueryUpdate) SetIPAddressID(id uuid.UUID) *DNSBLQueryUpdate {
 	dqu.mutation.SetIPAddressID(id)
-	return dqu
-}
-
-// SetNillableIPAddressID sets the ip_address edge to IP by id if the given value is not nil.
-func (dqu *DNSBLQueryUpdate) SetNillableIPAddressID(id *string) *DNSBLQueryUpdate {
-	if id != nil {
-		dqu = dqu.SetIPAddressID(*id)
-	}
 	return dqu
 }
 
@@ -74,14 +68,14 @@ func (dqu *DNSBLQueryUpdate) ClearResponses() *DNSBLQueryUpdate {
 }
 
 // RemoveResponseIDs removes the responses edge to DNSBLResponse by ids.
-func (dqu *DNSBLQueryUpdate) RemoveResponseIDs(ids ...string) *DNSBLQueryUpdate {
+func (dqu *DNSBLQueryUpdate) RemoveResponseIDs(ids ...uuid.UUID) *DNSBLQueryUpdate {
 	dqu.mutation.RemoveResponseIDs(ids...)
 	return dqu
 }
 
 // RemoveResponses removes responses edges to DNSBLResponse.
 func (dqu *DNSBLQueryUpdate) RemoveResponses(d ...*DNSBLResponse) *DNSBLQueryUpdate {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -101,12 +95,18 @@ func (dqu *DNSBLQueryUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(dqu.hooks) == 0 {
+		if err = dqu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = dqu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*DNSBLQueryMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = dqu.check(); err != nil {
+				return 0, err
 			}
 			dqu.mutation = mutation
 			affected, err = dqu.sqlSave(ctx)
@@ -145,13 +145,21 @@ func (dqu *DNSBLQueryUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (dqu *DNSBLQueryUpdate) check() error {
+	if _, ok := dqu.mutation.IPAddressID(); dqu.mutation.IPAddressCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"ip_address\"")
+	}
+	return nil
+}
+
 func (dqu *DNSBLQueryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   dnsblquery.Table,
 			Columns: dnsblquery.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblquery.FieldID,
 			},
 		},
@@ -172,7 +180,7 @@ func (dqu *DNSBLQueryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblresponse.FieldID,
 				},
 			},
@@ -188,7 +196,7 @@ func (dqu *DNSBLQueryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblresponse.FieldID,
 				},
 			},
@@ -207,7 +215,7 @@ func (dqu *DNSBLQueryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblresponse.FieldID,
 				},
 			},
@@ -226,7 +234,7 @@ func (dqu *DNSBLQueryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: ip.FieldID,
 				},
 			},
@@ -242,7 +250,7 @@ func (dqu *DNSBLQueryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: ip.FieldID,
 				},
 			},
@@ -271,14 +279,14 @@ type DNSBLQueryUpdateOne struct {
 }
 
 // AddResponseIDs adds the responses edge to DNSBLResponse by ids.
-func (dquo *DNSBLQueryUpdateOne) AddResponseIDs(ids ...string) *DNSBLQueryUpdateOne {
+func (dquo *DNSBLQueryUpdateOne) AddResponseIDs(ids ...uuid.UUID) *DNSBLQueryUpdateOne {
 	dquo.mutation.AddResponseIDs(ids...)
 	return dquo
 }
 
 // AddResponses adds the responses edges to DNSBLResponse.
 func (dquo *DNSBLQueryUpdateOne) AddResponses(d ...*DNSBLResponse) *DNSBLQueryUpdateOne {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -286,16 +294,8 @@ func (dquo *DNSBLQueryUpdateOne) AddResponses(d ...*DNSBLResponse) *DNSBLQueryUp
 }
 
 // SetIPAddressID sets the ip_address edge to IP by id.
-func (dquo *DNSBLQueryUpdateOne) SetIPAddressID(id string) *DNSBLQueryUpdateOne {
+func (dquo *DNSBLQueryUpdateOne) SetIPAddressID(id uuid.UUID) *DNSBLQueryUpdateOne {
 	dquo.mutation.SetIPAddressID(id)
-	return dquo
-}
-
-// SetNillableIPAddressID sets the ip_address edge to IP by id if the given value is not nil.
-func (dquo *DNSBLQueryUpdateOne) SetNillableIPAddressID(id *string) *DNSBLQueryUpdateOne {
-	if id != nil {
-		dquo = dquo.SetIPAddressID(*id)
-	}
 	return dquo
 }
 
@@ -316,14 +316,14 @@ func (dquo *DNSBLQueryUpdateOne) ClearResponses() *DNSBLQueryUpdateOne {
 }
 
 // RemoveResponseIDs removes the responses edge to DNSBLResponse by ids.
-func (dquo *DNSBLQueryUpdateOne) RemoveResponseIDs(ids ...string) *DNSBLQueryUpdateOne {
+func (dquo *DNSBLQueryUpdateOne) RemoveResponseIDs(ids ...uuid.UUID) *DNSBLQueryUpdateOne {
 	dquo.mutation.RemoveResponseIDs(ids...)
 	return dquo
 }
 
 // RemoveResponses removes responses edges to DNSBLResponse.
 func (dquo *DNSBLQueryUpdateOne) RemoveResponses(d ...*DNSBLResponse) *DNSBLQueryUpdateOne {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -343,12 +343,18 @@ func (dquo *DNSBLQueryUpdateOne) Save(ctx context.Context) (*DNSBLQuery, error) 
 		node *DNSBLQuery
 	)
 	if len(dquo.hooks) == 0 {
+		if err = dquo.check(); err != nil {
+			return nil, err
+		}
 		node, err = dquo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*DNSBLQueryMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = dquo.check(); err != nil {
+				return nil, err
 			}
 			dquo.mutation = mutation
 			node, err = dquo.sqlSave(ctx)
@@ -387,13 +393,21 @@ func (dquo *DNSBLQueryUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (dquo *DNSBLQueryUpdateOne) check() error {
+	if _, ok := dquo.mutation.IPAddressID(); dquo.mutation.IPAddressCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"ip_address\"")
+	}
+	return nil
+}
+
 func (dquo *DNSBLQueryUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLQuery, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   dnsblquery.Table,
 			Columns: dnsblquery.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblquery.FieldID,
 			},
 		},
@@ -412,7 +426,7 @@ func (dquo *DNSBLQueryUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLQuery
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblresponse.FieldID,
 				},
 			},
@@ -428,7 +442,7 @@ func (dquo *DNSBLQueryUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLQuery
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblresponse.FieldID,
 				},
 			},
@@ -447,7 +461,7 @@ func (dquo *DNSBLQueryUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLQuery
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblresponse.FieldID,
 				},
 			},
@@ -466,7 +480,7 @@ func (dquo *DNSBLQueryUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLQuery
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: ip.FieldID,
 				},
 			},
@@ -482,7 +496,7 @@ func (dquo *DNSBLQueryUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLQuery
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: ip.FieldID,
 				},
 			},

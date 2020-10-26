@@ -4,13 +4,16 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/predicate"
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // DNSBLResponseUpdate is the builder for updating DNSBLResponse entities.
@@ -38,9 +41,26 @@ func (dru *DNSBLResponseUpdate) SetDescription(s string) *DNSBLResponseUpdate {
 	return dru
 }
 
+// SetQueryID sets the query edge to DNSBLQuery by id.
+func (dru *DNSBLResponseUpdate) SetQueryID(id uuid.UUID) *DNSBLResponseUpdate {
+	dru.mutation.SetQueryID(id)
+	return dru
+}
+
+// SetQuery sets the query edge to DNSBLQuery.
+func (dru *DNSBLResponseUpdate) SetQuery(d *DNSBLQuery) *DNSBLResponseUpdate {
+	return dru.SetQueryID(d.ID)
+}
+
 // Mutation returns the DNSBLResponseMutation object of the builder.
 func (dru *DNSBLResponseUpdate) Mutation() *DNSBLResponseMutation {
 	return dru.mutation
+}
+
+// ClearQuery clears the "query" edge to type DNSBLQuery.
+func (dru *DNSBLResponseUpdate) ClearQuery() *DNSBLResponseUpdate {
+	dru.mutation.ClearQuery()
+	return dru
 }
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
@@ -50,12 +70,18 @@ func (dru *DNSBLResponseUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(dru.hooks) == 0 {
+		if err = dru.check(); err != nil {
+			return 0, err
+		}
 		affected, err = dru.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*DNSBLResponseMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = dru.check(); err != nil {
+				return 0, err
 			}
 			dru.mutation = mutation
 			affected, err = dru.sqlSave(ctx)
@@ -94,13 +120,21 @@ func (dru *DNSBLResponseUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (dru *DNSBLResponseUpdate) check() error {
+	if _, ok := dru.mutation.QueryID(); dru.mutation.QueryCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"query\"")
+	}
+	return nil
+}
+
 func (dru *DNSBLResponseUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   dnsblresponse.Table,
 			Columns: dnsblresponse.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblresponse.FieldID,
 			},
 		},
@@ -125,6 +159,41 @@ func (dru *DNSBLResponseUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			Value:  value,
 			Column: dnsblresponse.FieldDescription,
 		})
+	}
+	if dru.mutation.QueryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsblresponse.QueryTable,
+			Columns: []string{dnsblresponse.QueryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: dnsblquery.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dru.mutation.QueryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsblresponse.QueryTable,
+			Columns: []string{dnsblresponse.QueryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: dnsblquery.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, dru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -156,9 +225,26 @@ func (druo *DNSBLResponseUpdateOne) SetDescription(s string) *DNSBLResponseUpdat
 	return druo
 }
 
+// SetQueryID sets the query edge to DNSBLQuery by id.
+func (druo *DNSBLResponseUpdateOne) SetQueryID(id uuid.UUID) *DNSBLResponseUpdateOne {
+	druo.mutation.SetQueryID(id)
+	return druo
+}
+
+// SetQuery sets the query edge to DNSBLQuery.
+func (druo *DNSBLResponseUpdateOne) SetQuery(d *DNSBLQuery) *DNSBLResponseUpdateOne {
+	return druo.SetQueryID(d.ID)
+}
+
 // Mutation returns the DNSBLResponseMutation object of the builder.
 func (druo *DNSBLResponseUpdateOne) Mutation() *DNSBLResponseMutation {
 	return druo.mutation
+}
+
+// ClearQuery clears the "query" edge to type DNSBLQuery.
+func (druo *DNSBLResponseUpdateOne) ClearQuery() *DNSBLResponseUpdateOne {
+	druo.mutation.ClearQuery()
+	return druo
 }
 
 // Save executes the query and returns the updated entity.
@@ -168,12 +254,18 @@ func (druo *DNSBLResponseUpdateOne) Save(ctx context.Context) (*DNSBLResponse, e
 		node *DNSBLResponse
 	)
 	if len(druo.hooks) == 0 {
+		if err = druo.check(); err != nil {
+			return nil, err
+		}
 		node, err = druo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*DNSBLResponseMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = druo.check(); err != nil {
+				return nil, err
 			}
 			druo.mutation = mutation
 			node, err = druo.sqlSave(ctx)
@@ -212,13 +304,21 @@ func (druo *DNSBLResponseUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (druo *DNSBLResponseUpdateOne) check() error {
+	if _, ok := druo.mutation.QueryID(); druo.mutation.QueryCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"query\"")
+	}
+	return nil
+}
+
 func (druo *DNSBLResponseUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLResponse, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   dnsblresponse.Table,
 			Columns: dnsblresponse.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblresponse.FieldID,
 			},
 		},
@@ -241,6 +341,41 @@ func (druo *DNSBLResponseUpdateOne) sqlSave(ctx context.Context) (_node *DNSBLRe
 			Value:  value,
 			Column: dnsblresponse.FieldDescription,
 		})
+	}
+	if druo.mutation.QueryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsblresponse.QueryTable,
+			Columns: []string{dnsblresponse.QueryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: dnsblquery.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := druo.mutation.QueryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsblresponse.QueryTable,
+			Columns: []string{dnsblresponse.QueryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: dnsblquery.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &DNSBLResponse{config: druo.config}
 	_spec.Assign = _node.assignValues

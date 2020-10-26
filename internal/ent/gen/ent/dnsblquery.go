@@ -8,18 +8,18 @@ import (
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
-	"github.com/facebook/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // DNSBLQuery is the model entity for the DNSBLQuery schema.
 type DNSBLQuery struct {
 	config
 	// ID of the ent.
-	ID string `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DNSBLQueryQuery when eager-loading is set.
 	Edges      DNSBLQueryEdges `json:"edges"`
-	ip_queries *string
+	ip_queries *uuid.UUID
 }
 
 // DNSBLQueryEdges holds the relations/edges for other nodes in the graph.
@@ -59,14 +59,14 @@ func (e DNSBLQueryEdges) IPAddressOrErr() (*IP, error) {
 // scanValues returns the types for scanning values from sql.Rows.
 func (*DNSBLQuery) scanValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // id
+		&uuid.UUID{}, // id
 	}
 }
 
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*DNSBLQuery) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // ip_queries
+		&uuid.UUID{}, // ip_queries
 	}
 }
 
@@ -76,18 +76,17 @@ func (dq *DNSBLQuery) assignValues(values ...interface{}) error {
 	if m, n := len(values), len(dnsblquery.Columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
+	if value, ok := values[0].(*uuid.UUID); !ok {
+		return fmt.Errorf("unexpected type %T for field id", values[0])
+	} else if value != nil {
+		dq.ID = *value
 	}
-	dq.ID = string(value.Int64)
 	values = values[1:]
 	if len(values) == len(dnsblquery.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field ip_queries", value)
-		} else if value.Valid {
-			dq.ip_queries = new(string)
-			*dq.ip_queries = string(value.Int64)
+		if value, ok := values[0].(*uuid.UUID); !ok {
+			return fmt.Errorf("unexpected type %T for field ip_queries", values[0])
+		} else if value != nil {
+			dq.ip_queries = value
 		}
 	}
 	return nil

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
@@ -11,6 +12,7 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // DNSBLQueryCreate is the builder for creating a DNSBLQuery entity.
@@ -20,15 +22,21 @@ type DNSBLQueryCreate struct {
 	hooks    []Hook
 }
 
+// SetID sets the id field.
+func (dqc *DNSBLQueryCreate) SetID(u uuid.UUID) *DNSBLQueryCreate {
+	dqc.mutation.SetID(u)
+	return dqc
+}
+
 // AddResponseIDs adds the responses edge to DNSBLResponse by ids.
-func (dqc *DNSBLQueryCreate) AddResponseIDs(ids ...string) *DNSBLQueryCreate {
+func (dqc *DNSBLQueryCreate) AddResponseIDs(ids ...uuid.UUID) *DNSBLQueryCreate {
 	dqc.mutation.AddResponseIDs(ids...)
 	return dqc
 }
 
 // AddResponses adds the responses edges to DNSBLResponse.
 func (dqc *DNSBLQueryCreate) AddResponses(d ...*DNSBLResponse) *DNSBLQueryCreate {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -36,16 +44,8 @@ func (dqc *DNSBLQueryCreate) AddResponses(d ...*DNSBLResponse) *DNSBLQueryCreate
 }
 
 // SetIPAddressID sets the ip_address edge to IP by id.
-func (dqc *DNSBLQueryCreate) SetIPAddressID(id string) *DNSBLQueryCreate {
+func (dqc *DNSBLQueryCreate) SetIPAddressID(id uuid.UUID) *DNSBLQueryCreate {
 	dqc.mutation.SetIPAddressID(id)
-	return dqc
-}
-
-// SetNillableIPAddressID sets the ip_address edge to IP by id if the given value is not nil.
-func (dqc *DNSBLQueryCreate) SetNillableIPAddressID(id *string) *DNSBLQueryCreate {
-	if id != nil {
-		dqc = dqc.SetIPAddressID(*id)
-	}
 	return dqc
 }
 
@@ -65,6 +65,7 @@ func (dqc *DNSBLQueryCreate) Save(ctx context.Context) (*DNSBLQuery, error) {
 		err  error
 		node *DNSBLQuery
 	)
+	dqc.defaults()
 	if len(dqc.hooks) == 0 {
 		if err = dqc.check(); err != nil {
 			return nil, err
@@ -103,8 +104,19 @@ func (dqc *DNSBLQueryCreate) SaveX(ctx context.Context) *DNSBLQuery {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (dqc *DNSBLQueryCreate) defaults() {
+	if _, ok := dqc.mutation.ID(); !ok {
+		v := dnsblquery.DefaultID()
+		dqc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (dqc *DNSBLQueryCreate) check() error {
+	if _, ok := dqc.mutation.IPAddressID(); !ok {
+		return &ValidationError{Name: "ip_address", err: errors.New("ent: missing required edge \"ip_address\"")}
+	}
 	return nil
 }
 
@@ -116,8 +128,6 @@ func (dqc *DNSBLQueryCreate) sqlSave(ctx context.Context) (*DNSBLQuery, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = string(id)
 	return _node, nil
 }
 
@@ -127,11 +137,15 @@ func (dqc *DNSBLQueryCreate) createSpec() (*DNSBLQuery, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: dnsblquery.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblquery.FieldID,
 			},
 		}
 	)
+	if id, ok := dqc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if nodes := dqc.mutation.ResponsesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -141,7 +155,7 @@ func (dqc *DNSBLQueryCreate) createSpec() (*DNSBLQuery, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblresponse.FieldID,
 				},
 			},
@@ -160,7 +174,7 @@ func (dqc *DNSBLQueryCreate) createSpec() (*DNSBLQuery, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: ip.FieldID,
 				},
 			},
@@ -187,6 +201,7 @@ func (dqcb *DNSBLQueryCreateBulk) Save(ctx context.Context) ([]*DNSBLQuery, erro
 	for i := range dqcb.builders {
 		func(i int, root context.Context) {
 			builder := dqcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DNSBLQueryMutation)
 				if !ok {
@@ -212,8 +227,6 @@ func (dqcb *DNSBLQueryCreateBulk) Save(ctx context.Context) ([]*DNSBLQuery, erro
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = string(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

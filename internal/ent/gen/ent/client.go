@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/migrate"
+	"github.com/google/uuid"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
@@ -171,7 +172,7 @@ func (c *DNSBLQueryClient) UpdateOne(dq *DNSBLQuery) *DNSBLQueryUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DNSBLQueryClient) UpdateOneID(id string) *DNSBLQueryUpdateOne {
+func (c *DNSBLQueryClient) UpdateOneID(id uuid.UUID) *DNSBLQueryUpdateOne {
 	mutation := newDNSBLQueryMutation(c.config, OpUpdateOne, withDNSBLQueryID(id))
 	return &DNSBLQueryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -188,7 +189,7 @@ func (c *DNSBLQueryClient) DeleteOne(dq *DNSBLQuery) *DNSBLQueryDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *DNSBLQueryClient) DeleteOneID(id string) *DNSBLQueryDeleteOne {
+func (c *DNSBLQueryClient) DeleteOneID(id uuid.UUID) *DNSBLQueryDeleteOne {
 	builder := c.Delete().Where(dnsblquery.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -201,12 +202,12 @@ func (c *DNSBLQueryClient) Query() *DNSBLQueryQuery {
 }
 
 // Get returns a DNSBLQuery entity by its id.
-func (c *DNSBLQueryClient) Get(ctx context.Context, id string) (*DNSBLQuery, error) {
+func (c *DNSBLQueryClient) Get(ctx context.Context, id uuid.UUID) (*DNSBLQuery, error) {
 	return c.Query().Where(dnsblquery.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DNSBLQueryClient) GetX(ctx context.Context, id string) *DNSBLQuery {
+func (c *DNSBLQueryClient) GetX(ctx context.Context, id uuid.UUID) *DNSBLQuery {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -291,7 +292,7 @@ func (c *DNSBLResponseClient) UpdateOne(dr *DNSBLResponse) *DNSBLResponseUpdateO
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DNSBLResponseClient) UpdateOneID(id string) *DNSBLResponseUpdateOne {
+func (c *DNSBLResponseClient) UpdateOneID(id uuid.UUID) *DNSBLResponseUpdateOne {
 	mutation := newDNSBLResponseMutation(c.config, OpUpdateOne, withDNSBLResponseID(id))
 	return &DNSBLResponseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -308,7 +309,7 @@ func (c *DNSBLResponseClient) DeleteOne(dr *DNSBLResponse) *DNSBLResponseDeleteO
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *DNSBLResponseClient) DeleteOneID(id string) *DNSBLResponseDeleteOne {
+func (c *DNSBLResponseClient) DeleteOneID(id uuid.UUID) *DNSBLResponseDeleteOne {
 	builder := c.Delete().Where(dnsblresponse.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -321,17 +322,33 @@ func (c *DNSBLResponseClient) Query() *DNSBLResponseQuery {
 }
 
 // Get returns a DNSBLResponse entity by its id.
-func (c *DNSBLResponseClient) Get(ctx context.Context, id string) (*DNSBLResponse, error) {
+func (c *DNSBLResponseClient) Get(ctx context.Context, id uuid.UUID) (*DNSBLResponse, error) {
 	return c.Query().Where(dnsblresponse.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DNSBLResponseClient) GetX(ctx context.Context, id string) *DNSBLResponse {
+func (c *DNSBLResponseClient) GetX(ctx context.Context, id uuid.UUID) *DNSBLResponse {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryQuery queries the query edge of a DNSBLResponse.
+func (c *DNSBLResponseClient) QueryQuery(dr *DNSBLResponse) *DNSBLQueryQuery {
+	query := &DNSBLQueryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsblresponse.Table, dnsblresponse.FieldID, id),
+			sqlgraph.To(dnsblquery.Table, dnsblquery.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dnsblresponse.QueryTable, dnsblresponse.QueryColumn),
+		)
+		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -379,7 +396,7 @@ func (c *IPClient) UpdateOne(i *IP) *IPUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *IPClient) UpdateOneID(id string) *IPUpdateOne {
+func (c *IPClient) UpdateOneID(id uuid.UUID) *IPUpdateOne {
 	mutation := newIPMutation(c.config, OpUpdateOne, withIPID(id))
 	return &IPUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -396,7 +413,7 @@ func (c *IPClient) DeleteOne(i *IP) *IPDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *IPClient) DeleteOneID(id string) *IPDeleteOne {
+func (c *IPClient) DeleteOneID(id uuid.UUID) *IPDeleteOne {
 	builder := c.Delete().Where(ip.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -409,12 +426,12 @@ func (c *IPClient) Query() *IPQuery {
 }
 
 // Get returns a IP entity by its id.
-func (c *IPClient) Get(ctx context.Context, id string) (*IP, error) {
+func (c *IPClient) Get(ctx context.Context, id uuid.UUID) (*IP, error) {
 	return c.Query().Where(ip.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *IPClient) GetX(ctx context.Context, id string) *IP {
+func (c *IPClient) GetX(ctx context.Context, id uuid.UUID) *IP {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

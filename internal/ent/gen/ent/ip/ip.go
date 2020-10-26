@@ -2,6 +2,10 @@
 
 package ip
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the ip type in the database.
 	Label = "ip"
@@ -39,3 +43,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the id field.
+	DefaultID func() uuid.UUID
+)

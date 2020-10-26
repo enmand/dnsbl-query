@@ -8,11 +8,13 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/predicate"
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // DNSBLResponseQuery is the builder for querying DNSBLResponse entities.
@@ -23,7 +25,9 @@ type DNSBLResponseQuery struct {
 	order      []OrderFunc
 	unique     []string
 	predicates []predicate.DNSBLResponse
-	withFKs    bool
+	// eager-loading edges.
+	withQuery *DNSBLQueryQuery
+	withFKs   bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -53,6 +57,28 @@ func (drq *DNSBLResponseQuery) Order(o ...OrderFunc) *DNSBLResponseQuery {
 	return drq
 }
 
+// QueryQuery chains the current query on the query edge.
+func (drq *DNSBLResponseQuery) QueryQuery() *DNSBLQueryQuery {
+	query := &DNSBLQueryQuery{config: drq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := drq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := drq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsblresponse.Table, dnsblresponse.FieldID, selector),
+			sqlgraph.To(dnsblquery.Table, dnsblquery.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dnsblresponse.QueryTable, dnsblresponse.QueryColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(drq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first DNSBLResponse entity in the query. Returns *NotFoundError when no dnsblresponse was found.
 func (drq *DNSBLResponseQuery) First(ctx context.Context) (*DNSBLResponse, error) {
 	nodes, err := drq.Limit(1).All(ctx)
@@ -75,8 +101,8 @@ func (drq *DNSBLResponseQuery) FirstX(ctx context.Context) *DNSBLResponse {
 }
 
 // FirstID returns the first DNSBLResponse id in the query. Returns *NotFoundError when no id was found.
-func (drq *DNSBLResponseQuery) FirstID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (drq *DNSBLResponseQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = drq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -88,7 +114,7 @@ func (drq *DNSBLResponseQuery) FirstID(ctx context.Context) (id string, err erro
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (drq *DNSBLResponseQuery) FirstIDX(ctx context.Context) string {
+func (drq *DNSBLResponseQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := drq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -122,8 +148,8 @@ func (drq *DNSBLResponseQuery) OnlyX(ctx context.Context) *DNSBLResponse {
 }
 
 // OnlyID returns the only DNSBLResponse id in the query, returns an error if not exactly one id was returned.
-func (drq *DNSBLResponseQuery) OnlyID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (drq *DNSBLResponseQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = drq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -139,7 +165,7 @@ func (drq *DNSBLResponseQuery) OnlyID(ctx context.Context) (id string, err error
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (drq *DNSBLResponseQuery) OnlyIDX(ctx context.Context) string {
+func (drq *DNSBLResponseQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := drq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -165,8 +191,8 @@ func (drq *DNSBLResponseQuery) AllX(ctx context.Context) []*DNSBLResponse {
 }
 
 // IDs executes the query and returns a list of DNSBLResponse ids.
-func (drq *DNSBLResponseQuery) IDs(ctx context.Context) ([]string, error) {
-	var ids []string
+func (drq *DNSBLResponseQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := drq.Select(dnsblresponse.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -174,7 +200,7 @@ func (drq *DNSBLResponseQuery) IDs(ctx context.Context) ([]string, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (drq *DNSBLResponseQuery) IDsX(ctx context.Context) []string {
+func (drq *DNSBLResponseQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := drq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -230,6 +256,17 @@ func (drq *DNSBLResponseQuery) Clone() *DNSBLResponseQuery {
 		sql:  drq.sql.Clone(),
 		path: drq.path,
 	}
+}
+
+//  WithQuery tells the query-builder to eager-loads the nodes that are connected to
+// the "query" edge. The optional arguments used to configure the query builder of the edge.
+func (drq *DNSBLResponseQuery) WithQuery(opts ...func(*DNSBLQueryQuery)) *DNSBLResponseQuery {
+	query := &DNSBLQueryQuery{config: drq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	drq.withQuery = query
+	return drq
 }
 
 // GroupBy used to group vertices by one or more fields/columns.
@@ -296,10 +333,16 @@ func (drq *DNSBLResponseQuery) prepareQuery(ctx context.Context) error {
 
 func (drq *DNSBLResponseQuery) sqlAll(ctx context.Context) ([]*DNSBLResponse, error) {
 	var (
-		nodes   = []*DNSBLResponse{}
-		withFKs = drq.withFKs
-		_spec   = drq.querySpec()
+		nodes       = []*DNSBLResponse{}
+		withFKs     = drq.withFKs
+		_spec       = drq.querySpec()
+		loadedTypes = [1]bool{
+			drq.withQuery != nil,
+		}
 	)
+	if drq.withQuery != nil {
+		withFKs = true
+	}
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, dnsblresponse.ForeignKeys...)
 	}
@@ -317,6 +360,7 @@ func (drq *DNSBLResponseQuery) sqlAll(ctx context.Context) ([]*DNSBLResponse, er
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(values...)
 	}
 	if err := sqlgraph.QueryNodes(ctx, drq.driver, _spec); err != nil {
@@ -325,6 +369,32 @@ func (drq *DNSBLResponseQuery) sqlAll(ctx context.Context) ([]*DNSBLResponse, er
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := drq.withQuery; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*DNSBLResponse)
+		for i := range nodes {
+			if fk := nodes[i].dnsbl_query_responses; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(dnsblquery.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "dnsbl_query_responses" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Query = n
+			}
+		}
+	}
+
 	return nodes, nil
 }
 
@@ -347,7 +417,7 @@ func (drq *DNSBLResponseQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   dnsblresponse.Table,
 			Columns: dnsblresponse.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblresponse.FieldID,
 			},
 		},
