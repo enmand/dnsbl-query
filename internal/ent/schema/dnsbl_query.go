@@ -26,6 +26,7 @@ func (DNSBLQuery) Edges() []ent.Edge {
 		edge.To("responses", DNSBLResponse.Type),
 		edge.From("ip_address", IP.Type).
 			Ref("queries").
-			Unique(),
+			Unique().
+			Required(),
 	}
 }
