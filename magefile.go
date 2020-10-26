@@ -30,7 +30,7 @@ func (Go) Lint(ctx context.Context) error {
 }
 
 func (Go) Test(ctx context.Context) error {
-	return gtest("-v", "./..")
+	return gtest("-v", "./...")
 }
 
 func (Go) Generate(ctx context.Context) error {
