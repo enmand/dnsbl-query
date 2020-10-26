@@ -17,7 +17,10 @@ type ID struct {
 // UUID-based field for entity IDs
 func (ID) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
+		field.UUID("id", uuid.New()).
+			StructTag(`json:"id,omitempty"`).
+			Immutable().
+			Unique().
 			Default(uuid.New),
 	}
 }
