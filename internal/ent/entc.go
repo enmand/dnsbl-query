@@ -18,7 +18,7 @@ const pkg = "github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 
 func main() {
 	err := entc.Generate("./schema", &gen.Config{
-		IDType:    &field.TypeInfo{Type: field.TypeString},
+		IDType:    &field.TypeInfo{Type: field.TypeUUID},
 		Target:    "./gen/ent/",
 		Package:   pkg,
 		Templates: entgql.AllTemplates,
