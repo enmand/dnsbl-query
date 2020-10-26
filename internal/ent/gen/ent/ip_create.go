@@ -11,6 +11,7 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // IPCreate is the builder for creating a IP entity.
@@ -26,15 +27,21 @@ func (ic *IPCreate) SetIPAddress(s string) *IPCreate {
 	return ic
 }
 
+// SetID sets the id field.
+func (ic *IPCreate) SetID(u uuid.UUID) *IPCreate {
+	ic.mutation.SetID(u)
+	return ic
+}
+
 // AddQueryIDs adds the queries edge to DNSBLQuery by ids.
-func (ic *IPCreate) AddQueryIDs(ids ...string) *IPCreate {
+func (ic *IPCreate) AddQueryIDs(ids ...uuid.UUID) *IPCreate {
 	ic.mutation.AddQueryIDs(ids...)
 	return ic
 }
 
 // AddQueries adds the queries edges to DNSBLQuery.
 func (ic *IPCreate) AddQueries(d ...*DNSBLQuery) *IPCreate {
-	ids := make([]string, len(d))
+	ids := make([]uuid.UUID, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -52,6 +59,7 @@ func (ic *IPCreate) Save(ctx context.Context) (*IP, error) {
 		err  error
 		node *IP
 	)
+	ic.defaults()
 	if len(ic.hooks) == 0 {
 		if err = ic.check(); err != nil {
 			return nil, err
@@ -90,6 +98,14 @@ func (ic *IPCreate) SaveX(ctx context.Context) *IP {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (ic *IPCreate) defaults() {
+	if _, ok := ic.mutation.ID(); !ok {
+		v := ip.DefaultID()
+		ic.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (ic *IPCreate) check() error {
 	if _, ok := ic.mutation.IPAddress(); !ok {
@@ -106,8 +122,6 @@ func (ic *IPCreate) sqlSave(ctx context.Context) (*IP, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = string(id)
 	return _node, nil
 }
 
@@ -117,11 +131,15 @@ func (ic *IPCreate) createSpec() (*IP, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: ip.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: ip.FieldID,
 			},
 		}
 	)
+	if id, ok := ic.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := ic.mutation.IPAddress(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -139,7 +157,7 @@ func (ic *IPCreate) createSpec() (*IP, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
+					Type:   field.TypeUUID,
 					Column: dnsblquery.FieldID,
 				},
 			},
@@ -166,6 +184,7 @@ func (icb *IPCreateBulk) Save(ctx context.Context) ([]*IP, error) {
 	for i := range icb.builders {
 		func(i int, root context.Context) {
 			builder := icb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IPMutation)
 				if !ok {
@@ -191,8 +210,6 @@ func (icb *IPCreateBulk) Save(ctx context.Context) ([]*IP, error) {
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = string(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

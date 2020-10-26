@@ -15,6 +15,7 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // IPQuery is the builder for querying IP entities.
@@ -100,8 +101,8 @@ func (iq *IPQuery) FirstX(ctx context.Context) *IP {
 }
 
 // FirstID returns the first IP id in the query. Returns *NotFoundError when no id was found.
-func (iq *IPQuery) FirstID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (iq *IPQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = iq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -113,7 +114,7 @@ func (iq *IPQuery) FirstID(ctx context.Context) (id string, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (iq *IPQuery) FirstIDX(ctx context.Context) string {
+func (iq *IPQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := iq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -147,8 +148,8 @@ func (iq *IPQuery) OnlyX(ctx context.Context) *IP {
 }
 
 // OnlyID returns the only IP id in the query, returns an error if not exactly one id was returned.
-func (iq *IPQuery) OnlyID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (iq *IPQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = iq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -164,7 +165,7 @@ func (iq *IPQuery) OnlyID(ctx context.Context) (id string, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (iq *IPQuery) OnlyIDX(ctx context.Context) string {
+func (iq *IPQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := iq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -190,8 +191,8 @@ func (iq *IPQuery) AllX(ctx context.Context) []*IP {
 }
 
 // IDs executes the query and returns a list of IP ids.
-func (iq *IPQuery) IDs(ctx context.Context) ([]string, error) {
-	var ids []string
+func (iq *IPQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := iq.Select(ip.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -199,7 +200,7 @@ func (iq *IPQuery) IDs(ctx context.Context) ([]string, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (iq *IPQuery) IDsX(ctx context.Context) []string {
+func (iq *IPQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := iq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -361,7 +362,7 @@ func (iq *IPQuery) sqlAll(ctx context.Context) ([]*IP, error) {
 
 	if query := iq.withQueries; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[string]*IP)
+		nodeids := make(map[uuid.UUID]*IP)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -410,7 +411,7 @@ func (iq *IPQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   ip.Table,
 			Columns: ip.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: ip.FieldID,
 			},
 		},

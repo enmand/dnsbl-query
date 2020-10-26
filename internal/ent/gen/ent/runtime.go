@@ -2,8 +2,40 @@
 
 package ent
 
+import (
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
+	"github.com/enmand/dnsbl-query/internal/ent/schema"
+	"github.com/google/uuid"
+)
+
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	dnsblqueryMixin := schema.DNSBLQuery{}.Mixin()
+	dnsblqueryMixinFields0 := dnsblqueryMixin[0].Fields()
+	dnsblqueryFields := schema.DNSBLQuery{}.Fields()
+	_ = dnsblqueryFields
+	// dnsblqueryDescID is the schema descriptor for id field.
+	dnsblqueryDescID := dnsblqueryMixinFields0[0].Descriptor()
+	// dnsblquery.DefaultID holds the default value on creation for the id field.
+	dnsblquery.DefaultID = dnsblqueryDescID.Default.(func() uuid.UUID)
+	dnsblresponseMixin := schema.DNSBLResponse{}.Mixin()
+	dnsblresponseMixinFields0 := dnsblresponseMixin[0].Fields()
+	dnsblresponseFields := schema.DNSBLResponse{}.Fields()
+	_ = dnsblresponseFields
+	// dnsblresponseDescID is the schema descriptor for id field.
+	dnsblresponseDescID := dnsblresponseMixinFields0[0].Descriptor()
+	// dnsblresponse.DefaultID holds the default value on creation for the id field.
+	dnsblresponse.DefaultID = dnsblresponseDescID.Default.(func() uuid.UUID)
+	ipMixin := schema.IP{}.Mixin()
+	ipMixinFields0 := ipMixin[0].Fields()
+	ipFields := schema.IP{}.Fields()
+	_ = ipFields
+	// ipDescID is the schema descriptor for id field.
+	ipDescID := ipMixinFields0[0].Descriptor()
+	// ip.DefaultID holds the default value on creation for the id field.
+	ip.DefaultID = ipDescID.Default.(func() uuid.UUID)
 }

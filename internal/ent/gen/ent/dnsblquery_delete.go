@@ -69,7 +69,7 @@ func (dqd *DNSBLQueryDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: dnsblquery.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblquery.FieldID,
 			},
 		},

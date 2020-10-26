@@ -16,6 +16,7 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // DNSBLQueryQuery is the builder for querying DNSBLQuery entities.
@@ -125,8 +126,8 @@ func (dqq *DNSBLQueryQuery) FirstX(ctx context.Context) *DNSBLQuery {
 }
 
 // FirstID returns the first DNSBLQuery id in the query. Returns *NotFoundError when no id was found.
-func (dqq *DNSBLQueryQuery) FirstID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (dqq *DNSBLQueryQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = dqq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -138,7 +139,7 @@ func (dqq *DNSBLQueryQuery) FirstID(ctx context.Context) (id string, err error) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (dqq *DNSBLQueryQuery) FirstIDX(ctx context.Context) string {
+func (dqq *DNSBLQueryQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := dqq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -172,8 +173,8 @@ func (dqq *DNSBLQueryQuery) OnlyX(ctx context.Context) *DNSBLQuery {
 }
 
 // OnlyID returns the only DNSBLQuery id in the query, returns an error if not exactly one id was returned.
-func (dqq *DNSBLQueryQuery) OnlyID(ctx context.Context) (id string, err error) {
-	var ids []string
+func (dqq *DNSBLQueryQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = dqq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -189,7 +190,7 @@ func (dqq *DNSBLQueryQuery) OnlyID(ctx context.Context) (id string, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (dqq *DNSBLQueryQuery) OnlyIDX(ctx context.Context) string {
+func (dqq *DNSBLQueryQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := dqq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -215,8 +216,8 @@ func (dqq *DNSBLQueryQuery) AllX(ctx context.Context) []*DNSBLQuery {
 }
 
 // IDs executes the query and returns a list of DNSBLQuery ids.
-func (dqq *DNSBLQueryQuery) IDs(ctx context.Context) ([]string, error) {
-	var ids []string
+func (dqq *DNSBLQueryQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := dqq.Select(dnsblquery.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -224,7 +225,7 @@ func (dqq *DNSBLQueryQuery) IDs(ctx context.Context) ([]string, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (dqq *DNSBLQueryQuery) IDsX(ctx context.Context) []string {
+func (dqq *DNSBLQueryQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := dqq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -384,7 +385,7 @@ func (dqq *DNSBLQueryQuery) sqlAll(ctx context.Context) ([]*DNSBLQuery, error) {
 
 	if query := dqq.withResponses; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[string]*DNSBLQuery)
+		nodeids := make(map[uuid.UUID]*DNSBLQuery)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
@@ -412,8 +413,8 @@ func (dqq *DNSBLQueryQuery) sqlAll(ctx context.Context) ([]*DNSBLQuery, error) {
 	}
 
 	if query := dqq.withIPAddress; query != nil {
-		ids := make([]string, 0, len(nodes))
-		nodeids := make(map[string][]*DNSBLQuery)
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*DNSBLQuery)
 		for i := range nodes {
 			if fk := nodes[i].ip_queries; fk != nil {
 				ids = append(ids, *fk)
@@ -458,7 +459,7 @@ func (dqq *DNSBLQueryQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   dnsblquery.Table,
 			Columns: dnsblquery.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblquery.FieldID,
 			},
 		},

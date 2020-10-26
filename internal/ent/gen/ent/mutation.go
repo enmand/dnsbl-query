@@ -11,6 +11,7 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/predicate"
+	"github.com/google/uuid"
 
 	"github.com/facebook/ent"
 )
@@ -35,12 +36,12 @@ type DNSBLQueryMutation struct {
 	config
 	op                Op
 	typ               string
-	id                *string
+	id                *uuid.UUID
 	clearedFields     map[string]struct{}
-	responses         map[string]struct{}
-	removedresponses  map[string]struct{}
+	responses         map[uuid.UUID]struct{}
+	removedresponses  map[uuid.UUID]struct{}
 	clearedresponses  bool
-	ip_address        *string
+	ip_address        *uuid.UUID
 	clearedip_address bool
 	done              bool
 	oldValue          func(context.Context) (*DNSBLQuery, error)
@@ -67,7 +68,7 @@ func newDNSBLQueryMutation(c config, op Op, opts ...dnsblqueryOption) *DNSBLQuer
 }
 
 // withDNSBLQueryID sets the id field of the mutation.
-func withDNSBLQueryID(id string) dnsblqueryOption {
+func withDNSBLQueryID(id uuid.UUID) dnsblqueryOption {
 	return func(m *DNSBLQueryMutation) {
 		var (
 			err   error
@@ -117,9 +118,15 @@ func (m DNSBLQueryMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that, this
+// operation is accepted only on DNSBLQuery creation.
+func (m *DNSBLQueryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the id value in the mutation. Note that, the id
 // is available only if it was provided to the builder.
-func (m *DNSBLQueryMutation) ID() (id string, exists bool) {
+func (m *DNSBLQueryMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -127,9 +134,9 @@ func (m *DNSBLQueryMutation) ID() (id string, exists bool) {
 }
 
 // AddResponseIDs adds the responses edge to DNSBLResponse by ids.
-func (m *DNSBLQueryMutation) AddResponseIDs(ids ...string) {
+func (m *DNSBLQueryMutation) AddResponseIDs(ids ...uuid.UUID) {
 	if m.responses == nil {
-		m.responses = make(map[string]struct{})
+		m.responses = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.responses[ids[i]] = struct{}{}
@@ -147,9 +154,9 @@ func (m *DNSBLQueryMutation) ResponsesCleared() bool {
 }
 
 // RemoveResponseIDs removes the responses edge to DNSBLResponse by ids.
-func (m *DNSBLQueryMutation) RemoveResponseIDs(ids ...string) {
+func (m *DNSBLQueryMutation) RemoveResponseIDs(ids ...uuid.UUID) {
 	if m.removedresponses == nil {
-		m.removedresponses = make(map[string]struct{})
+		m.removedresponses = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removedresponses[ids[i]] = struct{}{}
@@ -157,7 +164,7 @@ func (m *DNSBLQueryMutation) RemoveResponseIDs(ids ...string) {
 }
 
 // RemovedResponses returns the removed ids of responses.
-func (m *DNSBLQueryMutation) RemovedResponsesIDs() (ids []string) {
+func (m *DNSBLQueryMutation) RemovedResponsesIDs() (ids []uuid.UUID) {
 	for id := range m.removedresponses {
 		ids = append(ids, id)
 	}
@@ -165,7 +172,7 @@ func (m *DNSBLQueryMutation) RemovedResponsesIDs() (ids []string) {
 }
 
 // ResponsesIDs returns the responses ids in the mutation.
-func (m *DNSBLQueryMutation) ResponsesIDs() (ids []string) {
+func (m *DNSBLQueryMutation) ResponsesIDs() (ids []uuid.UUID) {
 	for id := range m.responses {
 		ids = append(ids, id)
 	}
@@ -180,7 +187,7 @@ func (m *DNSBLQueryMutation) ResetResponses() {
 }
 
 // SetIPAddressID sets the ip_address edge to IP by id.
-func (m *DNSBLQueryMutation) SetIPAddressID(id string) {
+func (m *DNSBLQueryMutation) SetIPAddressID(id uuid.UUID) {
 	m.ip_address = &id
 }
 
@@ -195,7 +202,7 @@ func (m *DNSBLQueryMutation) IPAddressCleared() bool {
 }
 
 // IPAddressID returns the ip_address id in the mutation.
-func (m *DNSBLQueryMutation) IPAddressID() (id string, exists bool) {
+func (m *DNSBLQueryMutation) IPAddressID() (id uuid.UUID, exists bool) {
 	if m.ip_address != nil {
 		return *m.ip_address, true
 	}
@@ -205,7 +212,7 @@ func (m *DNSBLQueryMutation) IPAddressID() (id string, exists bool) {
 // IPAddressIDs returns the ip_address ids in the mutation.
 // Note that ids always returns len(ids) <= 1 for unique edges, and you should use
 // IPAddressID instead. It exists only for internal usage by the builders.
-func (m *DNSBLQueryMutation) IPAddressIDs() (ids []string) {
+func (m *DNSBLQueryMutation) IPAddressIDs() (ids []uuid.UUID) {
 	if id := m.ip_address; id != nil {
 		ids = append(ids, *id)
 	}
@@ -417,10 +424,12 @@ type DNSBLResponseMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *string
+	id            *uuid.UUID
 	code          *string
 	description   *string
 	clearedFields map[string]struct{}
+	query         *uuid.UUID
+	clearedquery  bool
 	done          bool
 	oldValue      func(context.Context) (*DNSBLResponse, error)
 	predicates    []predicate.DNSBLResponse
@@ -446,7 +455,7 @@ func newDNSBLResponseMutation(c config, op Op, opts ...dnsblresponseOption) *DNS
 }
 
 // withDNSBLResponseID sets the id field of the mutation.
-func withDNSBLResponseID(id string) dnsblresponseOption {
+func withDNSBLResponseID(id uuid.UUID) dnsblresponseOption {
 	return func(m *DNSBLResponseMutation) {
 		var (
 			err   error
@@ -496,9 +505,15 @@ func (m DNSBLResponseMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that, this
+// operation is accepted only on DNSBLResponse creation.
+func (m *DNSBLResponseMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the id value in the mutation. Note that, the id
 // is available only if it was provided to the builder.
-func (m *DNSBLResponseMutation) ID() (id string, exists bool) {
+func (m *DNSBLResponseMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -577,6 +592,45 @@ func (m *DNSBLResponseMutation) OldDescription(ctx context.Context) (v string, e
 // ResetDescription reset all changes of the "description" field.
 func (m *DNSBLResponseMutation) ResetDescription() {
 	m.description = nil
+}
+
+// SetQueryID sets the query edge to DNSBLQuery by id.
+func (m *DNSBLResponseMutation) SetQueryID(id uuid.UUID) {
+	m.query = &id
+}
+
+// ClearQuery clears the query edge to DNSBLQuery.
+func (m *DNSBLResponseMutation) ClearQuery() {
+	m.clearedquery = true
+}
+
+// QueryCleared returns if the edge query was cleared.
+func (m *DNSBLResponseMutation) QueryCleared() bool {
+	return m.clearedquery
+}
+
+// QueryID returns the query id in the mutation.
+func (m *DNSBLResponseMutation) QueryID() (id uuid.UUID, exists bool) {
+	if m.query != nil {
+		return *m.query, true
+	}
+	return
+}
+
+// QueryIDs returns the query ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// QueryID instead. It exists only for internal usage by the builders.
+func (m *DNSBLResponseMutation) QueryIDs() (ids []uuid.UUID) {
+	if id := m.query; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetQuery reset all changes of the "query" edge.
+func (m *DNSBLResponseMutation) ResetQuery() {
+	m.query = nil
+	m.clearedquery = false
 }
 
 // Op returns the operation name.
@@ -711,45 +765,68 @@ func (m *DNSBLResponseMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *DNSBLResponseMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.query != nil {
+		edges = append(edges, dnsblresponse.EdgeQuery)
+	}
 	return edges
 }
 
 // AddedIDs returns all ids (to other nodes) that were added for
 // the given edge name.
 func (m *DNSBLResponseMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case dnsblresponse.EdgeQuery:
+		if id := m.query; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *DNSBLResponseMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all ids (to other nodes) that were removed for
 // the given edge name.
 func (m *DNSBLResponseMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *DNSBLResponseMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedquery {
+		edges = append(edges, dnsblresponse.EdgeQuery)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean indicates if this edge was
 // cleared in this mutation.
 func (m *DNSBLResponseMutation) EdgeCleared(name string) bool {
+	switch name {
+	case dnsblresponse.EdgeQuery:
+		return m.clearedquery
+	}
 	return false
 }
 
 // ClearEdge clears the value for the given name. It returns an
 // error if the edge name is not defined in the schema.
 func (m *DNSBLResponseMutation) ClearEdge(name string) error {
+	switch name {
+	case dnsblresponse.EdgeQuery:
+		m.ClearQuery()
+		return nil
+	}
 	return fmt.Errorf("unknown DNSBLResponse unique edge %s", name)
 }
 
@@ -757,6 +834,11 @@ func (m *DNSBLResponseMutation) ClearEdge(name string) error {
 // given edge name. It returns an error if the edge is not
 // defined in the schema.
 func (m *DNSBLResponseMutation) ResetEdge(name string) error {
+	switch name {
+	case dnsblresponse.EdgeQuery:
+		m.ResetQuery()
+		return nil
+	}
 	return fmt.Errorf("unknown DNSBLResponse edge %s", name)
 }
 
@@ -766,11 +848,11 @@ type IPMutation struct {
 	config
 	op             Op
 	typ            string
-	id             *string
+	id             *uuid.UUID
 	ip_address     *string
 	clearedFields  map[string]struct{}
-	queries        map[string]struct{}
-	removedqueries map[string]struct{}
+	queries        map[uuid.UUID]struct{}
+	removedqueries map[uuid.UUID]struct{}
 	clearedqueries bool
 	done           bool
 	oldValue       func(context.Context) (*IP, error)
@@ -797,7 +879,7 @@ func newIPMutation(c config, op Op, opts ...ipOption) *IPMutation {
 }
 
 // withIPID sets the id field of the mutation.
-func withIPID(id string) ipOption {
+func withIPID(id uuid.UUID) ipOption {
 	return func(m *IPMutation) {
 		var (
 			err   error
@@ -847,9 +929,15 @@ func (m IPMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that, this
+// operation is accepted only on IP creation.
+func (m *IPMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the id value in the mutation. Note that, the id
 // is available only if it was provided to the builder.
-func (m *IPMutation) ID() (id string, exists bool) {
+func (m *IPMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -894,9 +982,9 @@ func (m *IPMutation) ResetIPAddress() {
 }
 
 // AddQueryIDs adds the queries edge to DNSBLQuery by ids.
-func (m *IPMutation) AddQueryIDs(ids ...string) {
+func (m *IPMutation) AddQueryIDs(ids ...uuid.UUID) {
 	if m.queries == nil {
-		m.queries = make(map[string]struct{})
+		m.queries = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.queries[ids[i]] = struct{}{}
@@ -914,9 +1002,9 @@ func (m *IPMutation) QueriesCleared() bool {
 }
 
 // RemoveQueryIDs removes the queries edge to DNSBLQuery by ids.
-func (m *IPMutation) RemoveQueryIDs(ids ...string) {
+func (m *IPMutation) RemoveQueryIDs(ids ...uuid.UUID) {
 	if m.removedqueries == nil {
-		m.removedqueries = make(map[string]struct{})
+		m.removedqueries = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.removedqueries[ids[i]] = struct{}{}
@@ -924,7 +1012,7 @@ func (m *IPMutation) RemoveQueryIDs(ids ...string) {
 }
 
 // RemovedQueries returns the removed ids of queries.
-func (m *IPMutation) RemovedQueriesIDs() (ids []string) {
+func (m *IPMutation) RemovedQueriesIDs() (ids []uuid.UUID) {
 	for id := range m.removedqueries {
 		ids = append(ids, id)
 	}
@@ -932,7 +1020,7 @@ func (m *IPMutation) RemovedQueriesIDs() (ids []string) {
 }
 
 // QueriesIDs returns the queries ids in the mutation.
-func (m *IPMutation) QueriesIDs() (ids []string) {
+func (m *IPMutation) QueriesIDs() (ids []uuid.UUID) {
 	for id := range m.queries {
 		ids = append(ids, id)
 	}

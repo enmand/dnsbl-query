@@ -7,9 +7,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // DNSBLResponseCreate is the builder for creating a DNSBLResponse entity.
@@ -31,6 +33,23 @@ func (drc *DNSBLResponseCreate) SetDescription(s string) *DNSBLResponseCreate {
 	return drc
 }
 
+// SetID sets the id field.
+func (drc *DNSBLResponseCreate) SetID(u uuid.UUID) *DNSBLResponseCreate {
+	drc.mutation.SetID(u)
+	return drc
+}
+
+// SetQueryID sets the query edge to DNSBLQuery by id.
+func (drc *DNSBLResponseCreate) SetQueryID(id uuid.UUID) *DNSBLResponseCreate {
+	drc.mutation.SetQueryID(id)
+	return drc
+}
+
+// SetQuery sets the query edge to DNSBLQuery.
+func (drc *DNSBLResponseCreate) SetQuery(d *DNSBLQuery) *DNSBLResponseCreate {
+	return drc.SetQueryID(d.ID)
+}
+
 // Mutation returns the DNSBLResponseMutation object of the builder.
 func (drc *DNSBLResponseCreate) Mutation() *DNSBLResponseMutation {
 	return drc.mutation
@@ -42,6 +61,7 @@ func (drc *DNSBLResponseCreate) Save(ctx context.Context) (*DNSBLResponse, error
 		err  error
 		node *DNSBLResponse
 	)
+	drc.defaults()
 	if len(drc.hooks) == 0 {
 		if err = drc.check(); err != nil {
 			return nil, err
@@ -80,6 +100,14 @@ func (drc *DNSBLResponseCreate) SaveX(ctx context.Context) *DNSBLResponse {
 	return v
 }
 
+// defaults sets the default values of the builder before save.
+func (drc *DNSBLResponseCreate) defaults() {
+	if _, ok := drc.mutation.ID(); !ok {
+		v := dnsblresponse.DefaultID()
+		drc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (drc *DNSBLResponseCreate) check() error {
 	if _, ok := drc.mutation.Code(); !ok {
@@ -87,6 +115,9 @@ func (drc *DNSBLResponseCreate) check() error {
 	}
 	if _, ok := drc.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
+	}
+	if _, ok := drc.mutation.QueryID(); !ok {
+		return &ValidationError{Name: "query", err: errors.New("ent: missing required edge \"query\"")}
 	}
 	return nil
 }
@@ -99,8 +130,6 @@ func (drc *DNSBLResponseCreate) sqlSave(ctx context.Context) (*DNSBLResponse, er
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = string(id)
 	return _node, nil
 }
 
@@ -110,11 +139,15 @@ func (drc *DNSBLResponseCreate) createSpec() (*DNSBLResponse, *sqlgraph.CreateSp
 		_spec = &sqlgraph.CreateSpec{
 			Table: dnsblresponse.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
+				Type:   field.TypeUUID,
 				Column: dnsblresponse.FieldID,
 			},
 		}
 	)
+	if id, ok := drc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := drc.mutation.Code(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -130,6 +163,25 @@ func (drc *DNSBLResponseCreate) createSpec() (*DNSBLResponse, *sqlgraph.CreateSp
 			Column: dnsblresponse.FieldDescription,
 		})
 		_node.Description = value
+	}
+	if nodes := drc.mutation.QueryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsblresponse.QueryTable,
+			Columns: []string{dnsblresponse.QueryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: dnsblquery.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
@@ -148,6 +200,7 @@ func (drcb *DNSBLResponseCreateBulk) Save(ctx context.Context) ([]*DNSBLResponse
 	for i := range drcb.builders {
 		func(i int, root context.Context) {
 			builder := drcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DNSBLResponseMutation)
 				if !ok {
@@ -173,8 +226,6 @@ func (drcb *DNSBLResponseCreateBulk) Save(ctx context.Context) ([]*DNSBLResponse
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = string(id)
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
