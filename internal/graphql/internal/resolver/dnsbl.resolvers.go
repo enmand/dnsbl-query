@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/gen"
 )
 
@@ -15,8 +16,8 @@ func (r *dNSBLQueryResolver) IP(ctx context.Context, obj *ent.DNSBLQuery) (*ent.
 	return obj.Edges.IPAddressOrErr()
 }
 
-func (r *dNSBLQueryResolver) Responses(ctx context.Context, obj *ent.DNSBLQuery) ([]*ent.DNSBLResponse, error) {
-	return obj.Edges.ResponsesOrErr()
+func (r *dNSBLQueryResolver) Responses(ctx context.Context, obj *ent.DNSBLQuery, after *ent.Cursor, before *ent.Cursor, first *int, last *int) (*ent.DNSBLResponseConnection, error) {
+	return obj.QueryResponses().Paginate(ctx, after, first, before, last)
 }
 
 func (r *dNSBLResponseResolver) Query(ctx context.Context, obj *ent.DNSBLResponse) (*ent.DNSBLQuery, error) {
@@ -24,11 +25,21 @@ func (r *dNSBLResponseResolver) Query(ctx context.Context, obj *ent.DNSBLRespons
 }
 
 func (r *iPResolver) ResponseCode(ctx context.Context, obj *ent.IP) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	rsp, err := obj.QueryQueries().
+		Order(ent.Desc(dnsblquery.FieldCreatedAt)).
+		QueryResponses().First(ctx)
+	if err != nil {
+		return "", fmt.Errorf("unable to find response for IP: %w", err)
+	}
+
+	return rsp.Code, nil
 }
 
-func (r *iPResolver) Queries(ctx context.Context, obj *ent.IP) ([]*ent.DNSBLQuery, error) {
-	return obj.Edges.QueriesOrErr()
+func (r *iPResolver) Queries(ctx context.Context, obj *ent.IP, after *ent.Cursor, before *ent.Cursor, first *int, last *int, orderBy *ent.DNSBLQueryOrder) (*ent.DNSBLQueryConnection, error) {
+	return obj.QueryQueries().
+		Paginate(ctx, after, first, before, last,
+			ent.WithDNSBLQueryOrder(orderBy),
+		)
 }
 
 // DNSBLQuery returns gen.DNSBLQueryResolver implementation.

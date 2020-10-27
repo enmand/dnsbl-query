@@ -18,7 +18,38 @@ type IP implements Node {
   ip_address: String!
 
   "The queries, ordered by most recently finished"
-  queries: [DNSBLQuery!]
+  queries(
+    after: Cursor
+    before: Cursor
+    first: Int
+    last: Int
+    orderBy: DNSBLQueryOrder
+  ): DNSBLQueryConnection
+}
+
+"DNSBLQueryOrder is the ordering input for a DNSBLQuery"
+input DNSBLQueryOrder {
+  direction: OrderDirection!
+  field: DNSBLQueryOrderField
+}
+
+"DNSBLQueryOrderField is the field to order by"
+enum DNSBLQueryOrderField {
+  UPDATED_AT
+  CREATED_AT
+}
+
+"DNSBLQueryConnection is the paginated cursor connection for an IP's DNSBLQueries"
+type DNSBLQueryConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [DNSBLQueryEdge]
+}
+
+"DNSBLQueryEdge is the connection edge for IP DNSBLQueries"
+type DNSBLQueryEdge {
+  node: DNSBLQuery
+  cursor: Cursor!
 }
 
 "DNSBLQuery represents a query run to a dnsbl service"
@@ -36,7 +67,25 @@ type DNSBLQuery implements Node {
   ip: IP!
 
   "The responses that were received for this dnsbl query"
-  responses: [DNSBLResponse!]
+  responses(
+    after: Cursor
+    before: Cursor
+    first: Int
+    last: Int
+  ): DNSBLResponseConnection
+}
+
+"DNSBLResponseConnection is the connection edge for DNSBLQuery"
+type DNSBLResponseConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [DNSBLResponseEdge]
+}
+
+"DNSBLResponseEdge is the connection edge for DNSBLResponse on a DNSBLQuery"
+type DNSBLResponseEdge {
+  node: DNSBLResponse
+  cursor: Cursor!
 }
 
 "DNSBLResponse represents the response to a query to a dnsbl service for an IP"

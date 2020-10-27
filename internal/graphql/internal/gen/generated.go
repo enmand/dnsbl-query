@@ -54,8 +54,19 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
 		IP        func(childComplexity int) int
-		Responses func(childComplexity int) int
+		Responses func(childComplexity int, after *ent.Cursor, before *ent.Cursor, first *int, last *int) int
 		UpdatedAt func(childComplexity int) int
+	}
+
+	DNSBLQueryConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	DNSBLQueryEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	DNSBLResponse struct {
@@ -65,11 +76,22 @@ type ComplexityRoot struct {
 		UpdatedAt func(childComplexity int) int
 	}
 
+	DNSBLResponseConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	DNSBLResponseEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	IP struct {
 		CreatedAt    func(childComplexity int) int
 		ID           func(childComplexity int) int
 		IPAddress    func(childComplexity int) int
-		Queries      func(childComplexity int) int
+		Queries      func(childComplexity int, after *ent.Cursor, before *ent.Cursor, first *int, last *int, orderBy *ent.DNSBLQueryOrder) int
 		ResponseCode func(childComplexity int) int
 		UpdatedAt    func(childComplexity int) int
 	}
@@ -97,7 +119,7 @@ type ComplexityRoot struct {
 
 type DNSBLQueryResolver interface {
 	IP(ctx context.Context, obj *ent.DNSBLQuery) (*ent.IP, error)
-	Responses(ctx context.Context, obj *ent.DNSBLQuery) ([]*ent.DNSBLResponse, error)
+	Responses(ctx context.Context, obj *ent.DNSBLQuery, after *ent.Cursor, before *ent.Cursor, first *int, last *int) (*ent.DNSBLResponseConnection, error)
 }
 type DNSBLResponseResolver interface {
 	Query(ctx context.Context, obj *ent.DNSBLResponse) (*ent.DNSBLQuery, error)
@@ -105,7 +127,7 @@ type DNSBLResponseResolver interface {
 type IPResolver interface {
 	ResponseCode(ctx context.Context, obj *ent.IP) (string, error)
 
-	Queries(ctx context.Context, obj *ent.IP) ([]*ent.DNSBLQuery, error)
+	Queries(ctx context.Context, obj *ent.IP, after *ent.Cursor, before *ent.Cursor, first *int, last *int, orderBy *ent.DNSBLQueryOrder) (*ent.DNSBLQueryConnection, error)
 }
 type MutationResolver interface {
 	Enque(ctx context.Context, ip []string) (*model.Operation, error)
@@ -156,7 +178,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.DNSBLQuery.Responses(childComplexity), true
+		args, err := ec.field_DNSBLQuery_responses_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.DNSBLQuery.Responses(childComplexity, args["after"].(*ent.Cursor), args["before"].(*ent.Cursor), args["first"].(*int), args["last"].(*int)), true
 
 	case "DNSBLQuery.updated_at":
 		if e.complexity.DNSBLQuery.UpdatedAt == nil {
@@ -164,6 +191,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DNSBLQuery.UpdatedAt(childComplexity), true
+
+	case "DNSBLQueryConnection.edges":
+		if e.complexity.DNSBLQueryConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.DNSBLQueryConnection.Edges(childComplexity), true
+
+	case "DNSBLQueryConnection.pageInfo":
+		if e.complexity.DNSBLQueryConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.DNSBLQueryConnection.PageInfo(childComplexity), true
+
+	case "DNSBLQueryConnection.totalCount":
+		if e.complexity.DNSBLQueryConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.DNSBLQueryConnection.TotalCount(childComplexity), true
+
+	case "DNSBLQueryEdge.cursor":
+		if e.complexity.DNSBLQueryEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.DNSBLQueryEdge.Cursor(childComplexity), true
+
+	case "DNSBLQueryEdge.node":
+		if e.complexity.DNSBLQueryEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.DNSBLQueryEdge.Node(childComplexity), true
 
 	case "DNSBLResponse.created_at":
 		if e.complexity.DNSBLResponse.CreatedAt == nil {
@@ -193,6 +255,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DNSBLResponse.UpdatedAt(childComplexity), true
 
+	case "DNSBLResponseConnection.edges":
+		if e.complexity.DNSBLResponseConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.DNSBLResponseConnection.Edges(childComplexity), true
+
+	case "DNSBLResponseConnection.pageInfo":
+		if e.complexity.DNSBLResponseConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.DNSBLResponseConnection.PageInfo(childComplexity), true
+
+	case "DNSBLResponseConnection.totalCount":
+		if e.complexity.DNSBLResponseConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.DNSBLResponseConnection.TotalCount(childComplexity), true
+
+	case "DNSBLResponseEdge.cursor":
+		if e.complexity.DNSBLResponseEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.DNSBLResponseEdge.Cursor(childComplexity), true
+
+	case "DNSBLResponseEdge.node":
+		if e.complexity.DNSBLResponseEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.DNSBLResponseEdge.Node(childComplexity), true
+
 	case "IP.created_at":
 		if e.complexity.IP.CreatedAt == nil {
 			break
@@ -219,7 +316,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.IP.Queries(childComplexity), true
+		args, err := ec.field_IP_queries_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.IP.Queries(childComplexity, args["after"].(*ent.Cursor), args["before"].(*ent.Cursor), args["first"].(*int), args["last"].(*int), args["orderBy"].(*ent.DNSBLQueryOrder)), true
 
 	case "IP.response_code":
 		if e.complexity.IP.ResponseCode == nil {
@@ -390,7 +492,38 @@ type IP implements Node {
   ip_address: String!
 
   "The queries, ordered by most recently finished"
-  queries: [DNSBLQuery!]
+  queries(
+    after: Cursor
+    before: Cursor
+    first: Int
+    last: Int
+    orderBy: DNSBLQueryOrder
+  ): DNSBLQueryConnection
+}
+
+"DNSBLQueryOrder is the ordering input for a DNSBLQuery"
+input DNSBLQueryOrder {
+  direction: OrderDirection!
+  field: DNSBLQueryOrderField
+}
+
+"DNSBLQueryOrderField is the field to order by"
+enum DNSBLQueryOrderField {
+  UPDATED_AT
+  CREATED_AT
+}
+
+"DNSBLQueryConnection is the paginated cursor connection for an IP's DNSBLQueries"
+type DNSBLQueryConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [DNSBLQueryEdge]
+}
+
+"DNSBLQueryEdge is the connection edge for IP DNSBLQueries"
+type DNSBLQueryEdge {
+  node: DNSBLQuery
+  cursor: Cursor!
 }
 
 "DNSBLQuery represents a query run to a dnsbl service"
@@ -408,7 +541,25 @@ type DNSBLQuery implements Node {
   ip: IP!
 
   "The responses that were received for this dnsbl query"
-  responses: [DNSBLResponse!]
+  responses(
+    after: Cursor
+    before: Cursor
+    first: Int
+    last: Int
+  ): DNSBLResponseConnection
+}
+
+"DNSBLResponseConnection is the connection edge for DNSBLQuery"
+type DNSBLResponseConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [DNSBLResponseEdge]
+}
+
+"DNSBLResponseEdge is the connection edge for DNSBLResponse on a DNSBLQuery"
+type DNSBLResponseEdge {
+  node: DNSBLResponse
+  cursor: Cursor!
 }
 
 "DNSBLResponse represents the response to a query to a dnsbl service for an IP"
@@ -478,6 +629,99 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_DNSBLQuery_responses_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg1, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_IP_queries_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg1, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.DNSBLQueryOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalODNSBLQueryOrder2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_enque_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -733,9 +977,16 @@ func (ec *executionContext) _DNSBLQuery_responses(ctx context.Context, field gra
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_DNSBLQuery_responses_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.DNSBLQuery().Responses(rctx, obj)
+		return ec.resolvers.DNSBLQuery().Responses(rctx, obj, args["after"].(*ent.Cursor), args["before"].(*ent.Cursor), args["first"].(*int), args["last"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -744,9 +995,178 @@ func (ec *executionContext) _DNSBLQuery_responses(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.DNSBLResponse)
+	res := resTmp.(*ent.DNSBLResponseConnection)
 	fc.Result = res
-	return ec.marshalODNSBLResponse2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponseᚄ(ctx, field.Selections, res)
+	return ec.marshalODNSBLResponseConnection2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponseConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLQueryConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLQueryConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLQueryConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLQueryConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLQueryConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLQueryConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLQueryConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLQueryConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLQueryConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.DNSBLQueryEdge)
+	fc.Result = res
+	return ec.marshalODNSBLQueryEdge2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLQueryEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLQueryEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLQueryEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DNSBLQuery)
+	fc.Result = res
+	return ec.marshalODNSBLQuery2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQuery(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLQueryEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLQueryEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLQueryEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐCursor(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _DNSBLResponse_id(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLResponse) (ret graphql.Marshaler) {
@@ -887,6 +1307,175 @@ func (ec *executionContext) _DNSBLResponse_query(ctx context.Context, field grap
 	res := resTmp.(*ent.DNSBLQuery)
 	fc.Result = res
 	return ec.marshalNDNSBLQuery2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQuery(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLResponseConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLResponseConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLResponseConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLResponseConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLResponseConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLResponseConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLResponseConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLResponseConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLResponseConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.DNSBLResponseEdge)
+	fc.Result = res
+	return ec.marshalODNSBLResponseEdge2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponseEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLResponseEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLResponseEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLResponseEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DNSBLResponse)
+	fc.Result = res
+	return ec.marshalODNSBLResponse2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _DNSBLResponseEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLResponseEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DNSBLResponseEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐCursor(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _IP_id(ctx context.Context, field graphql.CollectedField, obj *ent.IP) (ret graphql.Marshaler) {
@@ -1080,9 +1669,16 @@ func (ec *executionContext) _IP_queries(ctx context.Context, field graphql.Colle
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_IP_queries_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.IP().Queries(rctx, obj)
+		return ec.resolvers.IP().Queries(rctx, obj, args["after"].(*ent.Cursor), args["before"].(*ent.Cursor), args["first"].(*int), args["last"].(*int), args["orderBy"].(*ent.DNSBLQueryOrder))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1091,9 +1687,9 @@ func (ec *executionContext) _IP_queries(ctx context.Context, field graphql.Colle
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.DNSBLQuery)
+	res := resTmp.(*ent.DNSBLQueryConnection)
 	fc.Result = res
-	return ec.marshalODNSBLQuery2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryᚄ(ctx, field.Selections, res)
+	return ec.marshalODNSBLQueryConnection2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_enque(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2540,6 +3136,34 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputDNSBLQueryOrder(ctx context.Context, obj interface{}) (ent.DNSBLQueryOrder, error) {
+	var it ent.DNSBLQueryOrder
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNOrderDirection2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			it.Field, err = ec.unmarshalODNSBLQueryOrderField2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2634,6 +3258,69 @@ func (ec *executionContext) _DNSBLQuery(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var dNSBLQueryConnectionImplementors = []string{"DNSBLQueryConnection"}
+
+func (ec *executionContext) _DNSBLQueryConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.DNSBLQueryConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dNSBLQueryConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DNSBLQueryConnection")
+		case "totalCount":
+			out.Values[i] = ec._DNSBLQueryConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._DNSBLQueryConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._DNSBLQueryConnection_edges(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var dNSBLQueryEdgeImplementors = []string{"DNSBLQueryEdge"}
+
+func (ec *executionContext) _DNSBLQueryEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.DNSBLQueryEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dNSBLQueryEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DNSBLQueryEdge")
+		case "node":
+			out.Values[i] = ec._DNSBLQueryEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._DNSBLQueryEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var dNSBLResponseImplementors = []string{"DNSBLResponse", "Node"}
 
 func (ec *executionContext) _DNSBLResponse(ctx context.Context, sel ast.SelectionSet, obj *ent.DNSBLResponse) graphql.Marshaler {
@@ -2674,6 +3361,69 @@ func (ec *executionContext) _DNSBLResponse(ctx context.Context, sel ast.Selectio
 				}
 				return res
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var dNSBLResponseConnectionImplementors = []string{"DNSBLResponseConnection"}
+
+func (ec *executionContext) _DNSBLResponseConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.DNSBLResponseConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dNSBLResponseConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DNSBLResponseConnection")
+		case "totalCount":
+			out.Values[i] = ec._DNSBLResponseConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._DNSBLResponseConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._DNSBLResponseConnection_edges(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var dNSBLResponseEdgeImplementors = []string{"DNSBLResponseEdge"}
+
+func (ec *executionContext) _DNSBLResponseEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.DNSBLResponseEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dNSBLResponseEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DNSBLResponseEdge")
+		case "node":
+			out.Values[i] = ec._DNSBLResponseEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._DNSBLResponseEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3155,6 +3905,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNCursor2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐCursor(ctx context.Context, v interface{}) (ent.Cursor, error) {
+	var res ent.Cursor
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCursor2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐCursor(ctx context.Context, sel ast.SelectionSet, v ent.Cursor) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNDNSBLQuery2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQuery(ctx context.Context, sel ast.SelectionSet, v ent.DNSBLQuery) graphql.Marshaler {
 	return ec._DNSBLQuery(ctx, sel, &v)
 }
@@ -3167,16 +3927,6 @@ func (ec *executionContext) marshalNDNSBLQuery2ᚖgithubᚗcomᚋenmandᚋdnsbl�
 		return graphql.Null
 	}
 	return ec._DNSBLQuery(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNDNSBLResponse2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponse(ctx context.Context, sel ast.SelectionSet, v *ent.DNSBLResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._DNSBLResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (uuid.UUID, error) {
@@ -3206,6 +3956,35 @@ func (ec *executionContext) marshalNIP2ᚖgithubᚗcomᚋenmandᚋdnsblᚑquery�
 		return graphql.Null
 	}
 	return ec._IP(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNOrderDirection2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐOrderDirection(ctx context.Context, v interface{}) (ent.OrderDirection, error) {
+	var res ent.OrderDirection
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOrderDirection2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐOrderDirection(ctx context.Context, sel ast.SelectionSet, v ent.OrderDirection) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNPageInfo2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v ent.PageInfo) graphql.Marshaler {
+	return ec._PageInfo(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -3507,7 +4286,21 @@ func (ec *executionContext) marshalOCursor2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqu
 	return v
 }
 
-func (ec *executionContext) marshalODNSBLQuery2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.DNSBLQuery) graphql.Marshaler {
+func (ec *executionContext) marshalODNSBLQuery2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQuery(ctx context.Context, sel ast.SelectionSet, v *ent.DNSBLQuery) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DNSBLQuery(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODNSBLQueryConnection2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryConnection(ctx context.Context, sel ast.SelectionSet, v *ent.DNSBLQueryConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DNSBLQueryConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODNSBLQueryEdge2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.DNSBLQueryEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -3534,7 +4327,7 @@ func (ec *executionContext) marshalODNSBLQuery2ᚕᚖgithubᚗcomᚋenmandᚋdns
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDNSBLQuery2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQuery(ctx, sel, v[i])
+			ret[i] = ec.marshalODNSBLQueryEdge2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3547,7 +4340,52 @@ func (ec *executionContext) marshalODNSBLQuery2ᚕᚖgithubᚗcomᚋenmandᚋdns
 	return ret
 }
 
-func (ec *executionContext) marshalODNSBLResponse2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponseᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.DNSBLResponse) graphql.Marshaler {
+func (ec *executionContext) marshalODNSBLQueryEdge2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryEdge(ctx context.Context, sel ast.SelectionSet, v *ent.DNSBLQueryEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DNSBLQueryEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalODNSBLQueryOrder2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryOrder(ctx context.Context, v interface{}) (*ent.DNSBLQueryOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDNSBLQueryOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalODNSBLQueryOrderField2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryOrderField(ctx context.Context, v interface{}) (*ent.DNSBLQueryOrderField, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ent.DNSBLQueryOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODNSBLQueryOrderField2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.DNSBLQueryOrderField) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) marshalODNSBLResponse2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponse(ctx context.Context, sel ast.SelectionSet, v *ent.DNSBLResponse) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DNSBLResponse(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODNSBLResponseConnection2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponseConnection(ctx context.Context, sel ast.SelectionSet, v *ent.DNSBLResponseConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DNSBLResponseConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODNSBLResponseEdge2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponseEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.DNSBLResponseEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -3574,7 +4412,7 @@ func (ec *executionContext) marshalODNSBLResponse2ᚕᚖgithubᚗcomᚋenmandᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDNSBLResponse2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponse(ctx, sel, v[i])
+			ret[i] = ec.marshalODNSBLResponseEdge2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponseEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3585,6 +4423,13 @@ func (ec *executionContext) marshalODNSBLResponse2ᚕᚖgithubᚗcomᚋenmandᚋ
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalODNSBLResponseEdge2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLResponseEdge(ctx context.Context, sel ast.SelectionSet, v *ent.DNSBLResponseEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DNSBLResponseEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOIP2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐIP(ctx context.Context, sel ast.SelectionSet, v *ent.IP) graphql.Marshaler {
@@ -3592,6 +4437,21 @@ func (ec *executionContext) marshalOIP2ᚖgithubᚗcomᚋenmandᚋdnsblᚑquery�
 		return graphql.Null
 	}
 	return ec._IP(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt(*v)
 }
 
 func (ec *executionContext) marshalONode2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v ent.Noder) graphql.Marshaler {
