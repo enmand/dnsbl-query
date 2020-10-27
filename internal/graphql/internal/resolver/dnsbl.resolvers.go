@@ -11,28 +11,16 @@ import (
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/gen"
 )
 
-func (r *dNSBLQueryResolver) ID(ctx context.Context, obj *ent.DNSBLQuery) (string, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *dNSBLQueryResolver) IP(ctx context.Context, obj *ent.DNSBLQuery) (*ent.IP, error) {
-	panic(fmt.Errorf("not implemented"))
+	return obj.Edges.IPAddressOrErr()
 }
 
 func (r *dNSBLQueryResolver) Responses(ctx context.Context, obj *ent.DNSBLQuery) ([]*ent.DNSBLResponse, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *dNSBLResponseResolver) ID(ctx context.Context, obj *ent.DNSBLResponse) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	return obj.Edges.ResponsesOrErr()
 }
 
 func (r *dNSBLResponseResolver) Query(ctx context.Context, obj *ent.DNSBLResponse) (*ent.DNSBLQuery, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *iPResolver) ID(ctx context.Context, obj *ent.IP) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	return obj.Edges.QueryOrErr()
 }
 
 func (r *iPResolver) ResponseCode(ctx context.Context, obj *ent.IP) (string, error) {
@@ -40,7 +28,7 @@ func (r *iPResolver) ResponseCode(ctx context.Context, obj *ent.IP) (string, err
 }
 
 func (r *iPResolver) Queries(ctx context.Context, obj *ent.IP) ([]*ent.DNSBLQuery, error) {
-	panic(fmt.Errorf("not implemented"))
+	return obj.Edges.QueriesOrErr()
 }
 
 // DNSBLQuery returns gen.DNSBLQueryResolver implementation.

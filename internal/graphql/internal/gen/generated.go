@@ -16,6 +16,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/model"
+	"github.com/google/uuid"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -90,24 +91,18 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetIPDetails func(childComplexity int, ip string) int
-		Node         func(childComplexity int, id string) int
+		Node         func(childComplexity int, id uuid.UUID) int
 	}
 }
 
 type DNSBLQueryResolver interface {
-	ID(ctx context.Context, obj *ent.DNSBLQuery) (string, error)
-
 	IP(ctx context.Context, obj *ent.DNSBLQuery) (*ent.IP, error)
 	Responses(ctx context.Context, obj *ent.DNSBLQuery) ([]*ent.DNSBLResponse, error)
 }
 type DNSBLResponseResolver interface {
-	ID(ctx context.Context, obj *ent.DNSBLResponse) (string, error)
-
 	Query(ctx context.Context, obj *ent.DNSBLResponse) (*ent.DNSBLQuery, error)
 }
 type IPResolver interface {
-	ID(ctx context.Context, obj *ent.IP) (string, error)
-
 	ResponseCode(ctx context.Context, obj *ent.IP) (string, error)
 
 	Queries(ctx context.Context, obj *ent.IP) ([]*ent.DNSBLQuery, error)
@@ -116,7 +111,7 @@ type MutationResolver interface {
 	Enque(ctx context.Context, ip []string) (*model.Operation, error)
 }
 type QueryResolver interface {
-	Node(ctx context.Context, id string) (ent.Noder, error)
+	Node(ctx context.Context, id uuid.UUID) (ent.Noder, error)
 	GetIPDetails(ctx context.Context, ip string) (*ent.IP, error)
 }
 
@@ -309,7 +304,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Node(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.Node(childComplexity, args["id"].(uuid.UUID)), true
 
 	}
 	return 0, false
@@ -456,6 +451,9 @@ type PageInfo {
 "Time represents time-based fields"
 scalar Time
 
+"UUID represents UUID-based IDs"
+scalar UUID
+
 "An operation can be used to check the progress of a background task"
 type Operation {
   id: ID!
@@ -529,10 +527,10 @@ func (ec *executionContext) field_Query_getIPDetails_args(ctx context.Context, r
 func (ec *executionContext) field_Query_node_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 uuid.UUID
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -590,14 +588,14 @@ func (ec *executionContext) _DNSBLQuery_id(ctx context.Context, field graphql.Co
 		Object:     "DNSBLQuery",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.DNSBLQuery().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -609,9 +607,9 @@ func (ec *executionContext) _DNSBLQuery_id(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _DNSBLQuery_created_at(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLQuery) (ret graphql.Marshaler) {
@@ -762,14 +760,14 @@ func (ec *executionContext) _DNSBLResponse_id(ctx context.Context, field graphql
 		Object:     "DNSBLResponse",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.DNSBLResponse().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -781,9 +779,9 @@ func (ec *executionContext) _DNSBLResponse_id(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _DNSBLResponse_created_at(ctx context.Context, field graphql.CollectedField, obj *ent.DNSBLResponse) (ret graphql.Marshaler) {
@@ -902,14 +900,14 @@ func (ec *executionContext) _IP_id(ctx context.Context, field graphql.CollectedF
 		Object:     "IP",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.IP().ID(rctx, obj)
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -921,9 +919,9 @@ func (ec *executionContext) _IP_id(ctx context.Context, field graphql.CollectedF
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _IP_created_at(ctx context.Context, field graphql.CollectedField, obj *ent.IP) (ret graphql.Marshaler) {
@@ -1167,9 +1165,9 @@ func (ec *executionContext) _Operation_id(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
@@ -1331,7 +1329,7 @@ func (ec *executionContext) _Query_node(ctx context.Context, field graphql.Colle
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Node(rctx, args["id"].(string))
+		return ec.resolvers.Query().Node(rctx, args["id"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2586,19 +2584,10 @@ func (ec *executionContext) _DNSBLQuery(ctx context.Context, sel ast.SelectionSe
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("DNSBLQuery")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._DNSBLQuery_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._DNSBLQuery_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "created_at":
 			out.Values[i] = ec._DNSBLQuery_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2657,19 +2646,10 @@ func (ec *executionContext) _DNSBLResponse(ctx context.Context, sel ast.Selectio
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("DNSBLResponse")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._DNSBLResponse_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._DNSBLResponse_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "created_at":
 			out.Values[i] = ec._DNSBLResponse_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2717,19 +2697,10 @@ func (ec *executionContext) _IP(ctx context.Context, sel ast.SelectionSet, obj *
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("IP")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._IP_id(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._IP_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "created_at":
 			out.Values[i] = ec._IP_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3208,13 +3179,13 @@ func (ec *executionContext) marshalNDNSBLResponse2ᚖgithubᚗcomᚋenmandᚋdns
 	return ec._DNSBLResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
+func (ec *executionContext) unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (uuid.UUID, error) {
+	res, err := model.UnmarshalUUID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
+func (ec *executionContext) marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
+	res := model.MarshalUUID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

@@ -10,14 +10,15 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/gen"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/model"
+	"github.com/google/uuid"
 )
 
 func (r *mutationResolver) Enque(ctx context.Context, ip []string) (*model.Operation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Node(ctx context.Context, id string) (ent.Noder, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) Node(ctx context.Context, id uuid.UUID) (ent.Noder, error) {
+	return r.client.Noder(ctx, id)
 }
 
 func (r *queryResolver) GetIPDetails(ctx context.Context, ip string) (*ent.IP, error) {

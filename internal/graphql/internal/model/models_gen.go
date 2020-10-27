@@ -2,7 +2,11 @@
 
 package model
 
+import (
+	"github.com/google/uuid"
+)
+
 // An operation can be used to check the progress of a background task
 type Operation struct {
-	ID string `json:"id"`
+	ID uuid.UUID `json:"id"`
 }
