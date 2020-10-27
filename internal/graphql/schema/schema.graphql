@@ -1,0 +1,42 @@
+"Relay Node interface support"
+interface Node {
+  id: ID!
+}
+
+"OrderDirection represents the directional ordering of a pagination cursor"
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+"Cursor represents cursor used for pagination"
+scalar Cursor
+
+"PageInfo represents pagination information for forwards and backwards pagination"
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: Cursor
+  endCursor: Cursor
+}
+
+"Time represents time-based fields"
+scalar Time
+
+"An operation can be used to check the progress of a background task"
+type Operation {
+  id: ID!
+}
+
+"Query represents queries that the GraphQL service exposes"
+type Query {
+  node(id: ID!): Node
+
+  getIPDetails(ip: String!): IP
+}
+
+"Mutations represent requests that will modify data"
+type Mutation {
+  enque(ip: [String!]): Operation
+}
+

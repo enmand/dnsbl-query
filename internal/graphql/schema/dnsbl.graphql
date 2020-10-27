@@ -1,0 +1,55 @@
+"IP represents an IPv4 IP address"
+type IP implements Node {
+  "Unique identifier for IP address"
+  id: ID!
+
+  "The datetime this IP was first checked"
+  created_at: Time!
+
+  "The datetime this IP was last checked"
+  updated_at: Time!
+
+  """
+  response_code represents the last response code from the latest DNSBL query
+  """
+  response_code: String!
+
+  "The (IPv4) IP address"
+  ip_address: String!
+
+  "The queries, ordered by most recently finished"
+  queries: [DNSBLQuery!]
+}
+
+"DNSBLQuery represents a query run to a dnsbl service"
+type DNSBLQuery implements Node {
+  "Unique ID for the DNSBLQuery"
+  id: ID!
+
+  "The datetime this IP was created"
+  created_at: Time!
+
+  "The datetime this DNSBLQuery was last updated"
+  updated_at: Time!
+
+  "The IP address the query was performed on"
+  ip: IP!
+
+  "The responses that were received for this dnsbl query"
+  responses: [DNSBLResponse!]
+}
+
+"DNSBLResponse represents the response to a query to a dnsbl service for an IP"
+type DNSBLResponse implements Node {
+  "Unique ID for the DNSBLResponse"
+  id: ID!
+
+  "The datetime this DNSBLResponse was created"
+  created_at: Time!
+
+  "The datetime this DNSBLResponse was last updated"
+  updated_at: Time!
+
+  "The query this response represents a result for"
+  query: DNSBLQuery!
+}
