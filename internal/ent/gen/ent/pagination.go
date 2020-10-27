@@ -430,6 +430,63 @@ func (dq *DNSBLQueryQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// DNSBLQueryOrderFieldCreatedAt orders DNSBLQuery by created_at.
+	DNSBLQueryOrderFieldCreatedAt = &DNSBLQueryOrderField{
+		field: dnsblquery.FieldCreatedAt,
+		toCursor: func(dq *DNSBLQuery) Cursor {
+			return Cursor{
+				ID:    dq.ID,
+				Value: dq.CreatedAt,
+			}
+		},
+	}
+	// DNSBLQueryOrderFieldUpdatedAt orders DNSBLQuery by updated_at.
+	DNSBLQueryOrderFieldUpdatedAt = &DNSBLQueryOrderField{
+		field: dnsblquery.FieldUpdatedAt,
+		toCursor: func(dq *DNSBLQuery) Cursor {
+			return Cursor{
+				ID:    dq.ID,
+				Value: dq.UpdatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f DNSBLQueryOrderField) String() string {
+	var str string
+	switch f.field {
+	case dnsblquery.FieldCreatedAt:
+		str = "CREATED_AT"
+	case dnsblquery.FieldUpdatedAt:
+		str = "UPDATED_AT"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f DNSBLQueryOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *DNSBLQueryOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("DNSBLQueryOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *DNSBLQueryOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *DNSBLQueryOrderFieldUpdatedAt
+	default:
+		return fmt.Errorf("%s is not a valid DNSBLQueryOrderField", str)
+	}
+	return nil
+}
+
 // DNSBLQueryOrderField defines the ordering field of DNSBLQuery.
 type DNSBLQueryOrderField struct {
 	field    string
@@ -649,6 +706,63 @@ func (dr *DNSBLResponseQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// DNSBLResponseOrderFieldCreatedAt orders DNSBLResponse by created_at.
+	DNSBLResponseOrderFieldCreatedAt = &DNSBLResponseOrderField{
+		field: dnsblresponse.FieldCreatedAt,
+		toCursor: func(dr *DNSBLResponse) Cursor {
+			return Cursor{
+				ID:    dr.ID,
+				Value: dr.CreatedAt,
+			}
+		},
+	}
+	// DNSBLResponseOrderFieldUpdatedAt orders DNSBLResponse by updated_at.
+	DNSBLResponseOrderFieldUpdatedAt = &DNSBLResponseOrderField{
+		field: dnsblresponse.FieldUpdatedAt,
+		toCursor: func(dr *DNSBLResponse) Cursor {
+			return Cursor{
+				ID:    dr.ID,
+				Value: dr.UpdatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f DNSBLResponseOrderField) String() string {
+	var str string
+	switch f.field {
+	case dnsblresponse.FieldCreatedAt:
+		str = "CREATED_AT"
+	case dnsblresponse.FieldUpdatedAt:
+		str = "UPDATED_AT"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f DNSBLResponseOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *DNSBLResponseOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("DNSBLResponseOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *DNSBLResponseOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *DNSBLResponseOrderFieldUpdatedAt
+	default:
+		return fmt.Errorf("%s is not a valid DNSBLResponseOrderField", str)
+	}
+	return nil
+}
+
 // DNSBLResponseOrderField defines the ordering field of DNSBLResponse.
 type DNSBLResponseOrderField struct {
 	field    string
@@ -866,6 +980,63 @@ func (i *IPQuery) Paginate(
 	}
 
 	return conn, nil
+}
+
+var (
+	// IPOrderFieldCreatedAt orders IP by created_at.
+	IPOrderFieldCreatedAt = &IPOrderField{
+		field: ip.FieldCreatedAt,
+		toCursor: func(i *IP) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.CreatedAt,
+			}
+		},
+	}
+	// IPOrderFieldUpdatedAt orders IP by updated_at.
+	IPOrderFieldUpdatedAt = &IPOrderField{
+		field: ip.FieldUpdatedAt,
+		toCursor: func(i *IP) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.UpdatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f IPOrderField) String() string {
+	var str string
+	switch f.field {
+	case ip.FieldCreatedAt:
+		str = "CREATED_AT"
+	case ip.FieldUpdatedAt:
+		str = "UPDATED_AT"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f IPOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *IPOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("IPOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *IPOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *IPOrderFieldUpdatedAt
+	default:
+		return fmt.Errorf("%s is not a valid IPOrderField", str)
+	}
+	return nil
 }
 
 // IPOrderField defines the ordering field of IP.

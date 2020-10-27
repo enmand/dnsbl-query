@@ -1,10 +1,12 @@
 package schema
 
 import (
-	"github.com/enmand/dnsbl-query/internal/ent/schema/mixin"
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
+	"github.com/facebookincubator/ent-contrib/entgql"
+
+	"github.com/enmand/dnsbl-query/internal/ent/schema/mixin"
 )
 
 // DNSBLResponse is the response from the DNSBL service
@@ -33,6 +35,7 @@ func (DNSBLResponse) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("query", DNSBLQuery.Type).
 			Ref("responses").
+			Annotations(entgql.Bind()).
 			Unique().
 			Required(),
 	}

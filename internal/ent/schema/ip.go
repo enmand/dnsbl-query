@@ -4,6 +4,7 @@ import (
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
+	"github.com/facebookincubator/ent-contrib/entgql"
 
 	"github.com/enmand/dnsbl-query/internal/ent/schema/mixin"
 )
@@ -33,6 +34,7 @@ func (IP) Mixin() []ent.Mixin {
 // Edges define the entity edges for the IP node in the graph
 func (IP) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("queries", DNSBLQuery.Type),
+		edge.To("queries", DNSBLQuery.Type).
+			Annotations(entgql.Bind()),
 	}
 }
