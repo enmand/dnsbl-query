@@ -23,6 +23,9 @@ type PageInfo {
 "Time represents time-based fields"
 scalar Time
 
+"UUID represents UUID-based IDs"
+scalar UUID
+
 "An operation can be used to check the progress of a background task"
 type Operation {
   id: ID!
