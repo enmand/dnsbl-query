@@ -17,6 +17,14 @@ func (dq *DNSBLQueryQuery) CollectFields(ctx context.Context, satisfies ...strin
 }
 
 func (dq *DNSBLQueryQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *DNSBLQueryQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "ip_address":
+			dq = dq.WithIPAddress(func(query *IPQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
 	return dq
 }
 
@@ -29,6 +37,14 @@ func (dr *DNSBLResponseQuery) CollectFields(ctx context.Context, satisfies ...st
 }
 
 func (dr *DNSBLResponseQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *DNSBLResponseQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "query":
+			dr = dr.WithQuery(func(query *DNSBLQueryQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
 	return dr
 }
 
@@ -41,5 +57,13 @@ func (i *IPQuery) CollectFields(ctx context.Context, satisfies ...string) *IPQue
 }
 
 func (i *IPQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *IPQuery {
+	for _, field := range graphql.CollectFields(ctx, field.Selections, satisfies) {
+		switch field.Name {
+		case "queries":
+			i = i.WithQueries(func(query *DNSBLQueryQuery) {
+				query.collectField(ctx, field)
+			})
+		}
+	}
 	return i
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/facebook/ent/schema/index"
 	"github.com/facebook/ent/schema/mixin"
+	"github.com/facebookincubator/ent-contrib/entgql"
 )
 
 // Timed is a mixin providing time-based fields recording the creation
@@ -19,10 +20,12 @@ type Timed struct {
 func (Timed) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("created_at").
-			Default(time.Now),
+			Default(time.Now).
+			Annotations(entgql.OrderField("CREATED_AT")),
 		field.Time("updated_at").
 			Default(time.Now).
-			UpdateDefault(time.Now),
+			UpdateDefault(time.Now).
+			Annotations(entgql.OrderField("UPDATED_AT")),
 	}
 }
 
