@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
+	eip "github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/gen"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/model"
 	"github.com/google/uuid"
@@ -22,7 +23,7 @@ func (r *queryResolver) Node(ctx context.Context, id uuid.UUID) (ent.Noder, erro
 }
 
 func (r *queryResolver) GetIPDetails(ctx context.Context, ip string) (*ent.IP, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.client.IP.Query().Where(eip.IPAddressEQ(ip)).Only(ctx)
 }
 
 // Mutation returns gen.MutationResolver implementation.
