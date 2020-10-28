@@ -27,6 +27,7 @@ type hooks struct {
 	DNSBLQuery    []ent.Hook
 	DNSBLResponse []ent.Hook
 	IP            []ent.Hook
+	User          []ent.Hook
 }
 
 // Options applies the options on the config object.
