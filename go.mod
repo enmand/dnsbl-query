@@ -13,8 +13,12 @@ require (
 	github.com/golangci/golangci-lint v1.32.0
 	// uuid is used to generate new UUID-based IDs for entities
 	github.com/google/uuid v1.1.2
+	// mux is used as a router mix
+	github.com/gorilla/mux v1.8.0
 	// go-multierror is used in entc generated code for Relay Node Interface support
 	github.com/hashicorp/go-multierror v1.1.0
+	// go-flags is used for flag and argument parsing on the CLI
+	github.com/jessevdk/go-flags v1.4.0
 	// Mage is a pure Go-based replacement for make
 	github.com/magefile/mage v1.10.0
 	// sqlite3 for portable database, and in-memory testing
@@ -25,4 +29,6 @@ require (
 	github.com/vektah/gqlparser/v2 v2.1.0
 	// msgpack is used in entc generated code for pagination
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.1
+	// zap is a typed logging library from uber
+	go.uber.org/zap v1.16.0
 )
