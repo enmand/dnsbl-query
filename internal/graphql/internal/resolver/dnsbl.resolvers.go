@@ -26,8 +26,11 @@ func (r *dNSBLResponseResolver) Query(ctx context.Context, obj *ent.DNSBLRespons
 
 func (r *iPResolver) ResponseCode(ctx context.Context, obj *ent.IP) (string, error) {
 	rsp, err := obj.QueryQueries().
-		Order(ent.Desc(dnsblquery.FieldCreatedAt)).
-		QueryResponses().First(ctx)
+		Order(
+			ent.Desc(dnsblquery.FieldCreatedAt),
+		).
+		QueryResponses().
+		First(ctx)
 	if err != nil {
 		return "", fmt.Errorf("unable to find response for IP: %w", err)
 	}
