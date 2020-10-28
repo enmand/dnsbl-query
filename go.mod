@@ -17,6 +17,8 @@ require (
 	github.com/hashicorp/go-multierror v1.1.0
 	// Mage is a pure Go-based replacement for make
 	github.com/magefile/mage v1.10.0
+	// sqlite3 for portable database, and in-memory testing
+	github.com/mattn/go-sqlite3 v1.14.4
 	// gomega is an assertions based testing library
 	github.com/onsi/gomega v1.10.1
 	// gqlparser/v2 is used in entc generated code for pagination
