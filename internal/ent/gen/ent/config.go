@@ -27,6 +27,7 @@ type hooks struct {
 	DNSBLQuery    []ent.Hook
 	DNSBLResponse []ent.Hook
 	IP            []ent.Hook
+	Operation     []ent.Hook
 	User          []ent.Hook
 }
 

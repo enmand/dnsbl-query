@@ -13,6 +13,7 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/operation"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/user"
 
 	"github.com/facebook/ent/dialect"
@@ -31,6 +32,8 @@ type Client struct {
 	DNSBLResponse *DNSBLResponseClient
 	// IP is the client for interacting with the IP builders.
 	IP *IPClient
+	// Operation is the client for interacting with the Operation builders.
+	Operation *OperationClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -49,6 +52,7 @@ func (c *Client) init() {
 	c.DNSBLQuery = NewDNSBLQueryClient(c.config)
 	c.DNSBLResponse = NewDNSBLResponseClient(c.config)
 	c.IP = NewIPClient(c.config)
+	c.Operation = NewOperationClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -85,6 +89,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		DNSBLQuery:    NewDNSBLQueryClient(cfg),
 		DNSBLResponse: NewDNSBLResponseClient(cfg),
 		IP:            NewIPClient(cfg),
+		Operation:     NewOperationClient(cfg),
 		User:          NewUserClient(cfg),
 	}, nil
 }
@@ -104,6 +109,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		DNSBLQuery:    NewDNSBLQueryClient(cfg),
 		DNSBLResponse: NewDNSBLResponseClient(cfg),
 		IP:            NewIPClient(cfg),
+		Operation:     NewOperationClient(cfg),
 		User:          NewUserClient(cfg),
 	}, nil
 }
@@ -136,6 +142,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.DNSBLQuery.Use(hooks...)
 	c.DNSBLResponse.Use(hooks...)
 	c.IP.Use(hooks...)
+	c.Operation.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -465,6 +472,94 @@ func (c *IPClient) QueryQueries(i *IP) *DNSBLQueryQuery {
 // Hooks returns the client hooks.
 func (c *IPClient) Hooks() []Hook {
 	return c.hooks.IP
+}
+
+// OperationClient is a client for the Operation schema.
+type OperationClient struct {
+	config
+}
+
+// NewOperationClient returns a client for the Operation from the given config.
+func NewOperationClient(c config) *OperationClient {
+	return &OperationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `operation.Hooks(f(g(h())))`.
+func (c *OperationClient) Use(hooks ...Hook) {
+	c.hooks.Operation = append(c.hooks.Operation, hooks...)
+}
+
+// Create returns a create builder for Operation.
+func (c *OperationClient) Create() *OperationCreate {
+	mutation := newOperationMutation(c.config, OpCreate)
+	return &OperationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// BulkCreate returns a builder for creating a bulk of Operation entities.
+func (c *OperationClient) CreateBulk(builders ...*OperationCreate) *OperationCreateBulk {
+	return &OperationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Operation.
+func (c *OperationClient) Update() *OperationUpdate {
+	mutation := newOperationMutation(c.config, OpUpdate)
+	return &OperationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OperationClient) UpdateOne(o *Operation) *OperationUpdateOne {
+	mutation := newOperationMutation(c.config, OpUpdateOne, withOperation(o))
+	return &OperationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OperationClient) UpdateOneID(id uuid.UUID) *OperationUpdateOne {
+	mutation := newOperationMutation(c.config, OpUpdateOne, withOperationID(id))
+	return &OperationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Operation.
+func (c *OperationClient) Delete() *OperationDelete {
+	mutation := newOperationMutation(c.config, OpDelete)
+	return &OperationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *OperationClient) DeleteOne(o *Operation) *OperationDeleteOne {
+	return c.DeleteOneID(o.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *OperationClient) DeleteOneID(id uuid.UUID) *OperationDeleteOne {
+	builder := c.Delete().Where(operation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OperationDeleteOne{builder}
+}
+
+// Query returns a query builder for Operation.
+func (c *OperationClient) Query() *OperationQuery {
+	return &OperationQuery{config: c.config}
+}
+
+// Get returns a Operation entity by its id.
+func (c *OperationClient) Get(ctx context.Context, id uuid.UUID) (*Operation, error) {
+	return c.Query().Where(operation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OperationClient) GetX(ctx context.Context, id uuid.UUID) *Operation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OperationClient) Hooks() []Hook {
+	return c.hooks.Operation
 }
 
 // UserClient is a client for the User schema.

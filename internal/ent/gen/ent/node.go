@@ -10,6 +10,7 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/operation"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/user"
 	"github.com/facebookincubator/ent-contrib/entgql"
 	"github.com/google/uuid"
@@ -188,6 +189,65 @@ func (i *IP) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (o *Operation) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     o.ID,
+		Type:   "Operation",
+		Fields: make([]*Field, 6),
+		Edges:  make([]*Edge, 0),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(o.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(o.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(o.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "operation.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(o.IPAddress); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "ip_address",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(o.Status); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "operation.Status",
+		Name:  "status",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(o.DoneAt); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "time.Time",
+		Name:  "done_at",
+		Value: string(buf),
+	}
+	return node, nil
+}
+
 func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
@@ -305,6 +365,15 @@ func (c *Client) noder(ctx context.Context, tbl string, id uuid.UUID) (Noder, er
 		n, err := c.IP.Query().
 			Where(ip.ID(id)).
 			CollectFields(ctx, "IP").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case operation.Table:
+		n, err := c.Operation.Query().
+			Where(operation.ID(id)).
+			CollectFields(ctx, "Operation").
 			Only(ctx)
 		if err != nil {
 			return nil, err
