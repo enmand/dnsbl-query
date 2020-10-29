@@ -9,11 +9,30 @@ import (
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 	eip "github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/operation"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/gen"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/model"
 	"github.com/google/uuid"
 )
 
+func (r *mutationResolver) Enque(ctx context.Context, ip []string) ([]*ent.Operation, error) {
+	ops := []*ent.Operation{}
+
+	for _, i := range ip {
+		op, err := r.client.Operation.Create().
+			SetIPAddress(i).
+			SetType(operation.TypeIPDNSBL).
+			SetStatus(operation.StatusWAITING).
+			Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("enqueing operation for '%s': %w", i, err)
+		}
+
+		ops = append(ops, op)
+	}
+
+	return ops, nil
+}
 
 func (r *operationResolver) Type(ctx context.Context, obj *ent.Operation) (model.OperationType, error) {
 	// TODO: This resolver and the Status resolver are probably unnecessary
