@@ -43,6 +43,7 @@ type ResolverRoot interface {
 	DNSBLResponse() DNSBLResponseResolver
 	IP() IPResolver
 	Mutation() MutationResolver
+	Operation() OperationResolver
 	Query() QueryResolver
 }
 
@@ -101,7 +102,10 @@ type ComplexityRoot struct {
 	}
 
 	Operation struct {
-		ID func(childComplexity int) int
+		ID        func(childComplexity int) int
+		IPAddress func(childComplexity int) int
+		Status    func(childComplexity int) int
+		Type      func(childComplexity int) int
 	}
 
 	PageInfo struct {
@@ -130,7 +134,12 @@ type IPResolver interface {
 	Queries(ctx context.Context, obj *ent.IP, after *ent.Cursor, before *ent.Cursor, first *int, last *int, orderBy *ent.DNSBLQueryOrder) (*ent.DNSBLQueryConnection, error)
 }
 type MutationResolver interface {
-	Enque(ctx context.Context, ip []string) (*model.Operation, error)
+	Enque(ctx context.Context, ip []string) ([]*ent.Operation, error)
+}
+type OperationResolver interface {
+	Type(ctx context.Context, obj *ent.Operation) (model.OperationType, error)
+
+	Status(ctx context.Context, obj *ent.Operation) (model.OperationStatus, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id uuid.UUID) (ent.Noder, error)
@@ -355,6 +364,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Operation.ID(childComplexity), true
+
+	case "Operation.ip_address":
+		if e.complexity.Operation.IPAddress == nil {
+			break
+		}
+
+		return e.complexity.Operation.IPAddress(childComplexity), true
+
+	case "Operation.status":
+		if e.complexity.Operation.Status == nil {
+			break
+		}
+
+		return e.complexity.Operation.Status(childComplexity), true
+
+	case "Operation.type":
+		if e.complexity.Operation.Type == nil {
+			break
+		}
+
+		return e.complexity.Operation.Type(childComplexity), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -605,9 +635,30 @@ scalar Time
 "UUID represents UUID-based IDs"
 scalar UUID
 
+"Type of operation being preformed"
+enum OperationType {
+  IPDNSBL
+}
+
+"Status of the operation"
+enum OperationStatus {
+  IN_PROGRESS
+  DONE
+}
+
 "An operation can be used to check the progress of a background task"
-type Operation {
+type Operation implements Node {
+  "Unique ID of the enqueued operation"
   id: ID!
+
+  "Type of the enqueued operation. Only IPDNSBL is supported"
+  type: OperationType!
+
+  "IP Address to be checked"
+  ip_address: String!
+
+  "Status of the Operation"
+  status: OperationStatus!
 }
 
 "Query represents queries that the GraphQL service exposes"
@@ -619,7 +670,7 @@ type Query {
 
 "Mutations represent requests that will modify data"
 type Mutation {
-  enque(ip: [String!]): Operation
+  enque(ip: [String!]): [Operation]
 }
 
 `, BuiltIn: false},
@@ -1726,12 +1777,12 @@ func (ec *executionContext) _Mutation_enque(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Operation)
+	res := resTmp.([]*ent.Operation)
 	fc.Result = res
-	return ec.marshalOOperation2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperation(ctx, field.Selections, res)
+	return ec.marshalOOperation2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐOperation(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Operation_id(ctx context.Context, field graphql.CollectedField, obj *model.Operation) (ret graphql.Marshaler) {
+func (ec *executionContext) _Operation_id(ctx context.Context, field graphql.CollectedField, obj *ent.Operation) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1764,6 +1815,111 @@ func (ec *executionContext) _Operation_id(ctx context.Context, field graphql.Col
 	res := resTmp.(uuid.UUID)
 	fc.Result = res
 	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Operation_type(ctx context.Context, field graphql.CollectedField, obj *ent.Operation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Operation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Operation().Type(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.OperationType)
+	fc.Result = res
+	return ec.marshalNOperationType2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperationType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Operation_ip_address(ctx context.Context, field graphql.CollectedField, obj *ent.Operation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Operation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IPAddress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Operation_status(ctx context.Context, field graphql.CollectedField, obj *ent.Operation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Operation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Operation().Status(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.OperationStatus)
+	fc.Result = res
+	return ec.marshalNOperationStatus2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperationStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
@@ -3187,6 +3343,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._DNSBLResponse(ctx, sel, obj)
+	case *ent.Operation:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Operation(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -3530,9 +3691,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
-var operationImplementors = []string{"Operation"}
+var operationImplementors = []string{"Operation", "Node"}
 
-func (ec *executionContext) _Operation(ctx context.Context, sel ast.SelectionSet, obj *model.Operation) graphql.Marshaler {
+func (ec *executionContext) _Operation(ctx context.Context, sel ast.SelectionSet, obj *ent.Operation) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, operationImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3544,8 +3705,41 @@ func (ec *executionContext) _Operation(ctx context.Context, sel ast.SelectionSet
 		case "id":
 			out.Values[i] = ec._Operation_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "type":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Operation_type(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "ip_address":
+			out.Values[i] = ec._Operation_ip_address(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "status":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Operation_status(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3971,6 +4165,26 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNOperationStatus2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperationStatus(ctx context.Context, v interface{}) (model.OperationStatus, error) {
+	var res model.OperationStatus
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOperationStatus2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperationStatus(ctx context.Context, sel ast.SelectionSet, v model.OperationStatus) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNOperationType2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperationType(ctx context.Context, v interface{}) (model.OperationType, error) {
+	var res model.OperationType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOperationType2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperationType(ctx context.Context, sel ast.SelectionSet, v model.OperationType) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNOrderDirection2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐOrderDirection(ctx context.Context, v interface{}) (ent.OrderDirection, error) {
@@ -4461,7 +4675,47 @@ func (ec *executionContext) marshalONode2githubᚗcomᚋenmandᚋdnsblᚑquery�
 	return ec._Node(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOOperation2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperation(ctx context.Context, sel ast.SelectionSet, v *model.Operation) graphql.Marshaler {
+func (ec *executionContext) marshalOOperation2ᚕᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐOperation(ctx context.Context, sel ast.SelectionSet, v []*ent.Operation) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOOperation2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐOperation(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOOperation2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐOperation(ctx context.Context, sel ast.SelectionSet, v *ent.Operation) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
