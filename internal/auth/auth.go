@@ -32,3 +32,8 @@ func CreateUser(ctx context.Context, cl *ent.Client, username, password string) 
 
 	return nil
 }
+
+// ComparePassword compares a plaintext password against a hash
+func ComparePassword(hash []byte, password []byte) error {
+	return scrypt.CompareHashAndPassword(hash, []byte(password))
+}

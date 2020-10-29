@@ -14,6 +14,7 @@ import (
 	// database support
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/enmand/dnsbl-query/internal/auth"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/migrate"
 	"github.com/enmand/dnsbl-query/internal/flags"
@@ -121,7 +122,7 @@ func New(opts ...Option) (*Server, error) {
 
 	r.Handle("/", http.RedirectHandler("/graphql/playground", http.StatusPermanentRedirect))
 	r.Handle("/graphql/playground", playground.Handler("GraphQL Playground", "/graphql"))
-	r.Handle("/graphql", srv)
+	r.Handle("/graphql", auth.BasicAuth(options.client, options.logger, srv))
 
 	return &Server{
 		logger:  options.logger,
