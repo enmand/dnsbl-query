@@ -14,19 +14,19 @@ import (
 	// database support
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/enmand/dnsbl-query/internal/auth"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/migrate"
+	"github.com/enmand/dnsbl-query/internal/flags"
 	"github.com/enmand/dnsbl-query/internal/graphql/internal/resolver"
 )
 
 // GraphQLFlags are the flags for the GraphQL HTTP service
 type GraphQLFlags struct {
+	flags.Database
+
 	Listen string `short:"p" long:"port" env:"PORT" description:"Port to run the server on" default:":8080"`
-
-	DatabaseURI    string `short:"u" long:"database-uri" env:"DATABASE_URI" description:"database URI to connect to" default:"file:ent?mode=memory&cache=shared&_fk=1"`
-	DatabaseDriver string `short:"s" long:"database-driver" env:"DATABASE_DRIVER" description:"Database driver to use" default:"sqlite3"`
-
-	Debug bool `long:"debug" env:"DEBUG" description:"If the server should be in debug mode"`
+	Debug  bool   `long:"debug" env:"DEBUG" description:"If the server should be in debug mode"`
 }
 
 // Flags are the configurable set of GraphQLFlags
@@ -122,7 +122,7 @@ func New(opts ...Option) (*Server, error) {
 
 	r.Handle("/", http.RedirectHandler("/graphql/playground", http.StatusPermanentRedirect))
 	r.Handle("/graphql/playground", playground.Handler("GraphQL Playground", "/graphql"))
-	r.Handle("/graphql", srv)
+	r.Handle("/graphql", auth.BasicAuth(options.client, options.logger, srv))
 
 	return &Server{
 		logger:  options.logger,

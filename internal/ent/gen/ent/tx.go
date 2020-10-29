@@ -18,6 +18,8 @@ type Tx struct {
 	DNSBLResponse *DNSBLResponseClient
 	// IP is the client for interacting with the IP builders.
 	IP *IPClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 
 	// lazily loaded.
 	client     *Client
@@ -156,6 +158,7 @@ func (tx *Tx) init() {
 	tx.DNSBLQuery = NewDNSBLQueryClient(tx.config)
 	tx.DNSBLResponse = NewDNSBLResponseClient(tx.config)
 	tx.IP = NewIPClient(tx.config)
+	tx.User = NewUserClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

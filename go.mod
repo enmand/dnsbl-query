@@ -5,6 +5,8 @@ go 1.15
 require (
 	// gqlgen is for resolver generation, and gql service scaffolding
 	github.com/99designs/gqlgen v0.13.0
+	// simple-scrypt is a wrapper on the x/scrypt pkg
+	github.com/elithrar/simple-scrypt v1.3.0
 	// ent is an entity relationship library, which gqlgen support via ent-contrib
 	github.com/facebook/ent v0.4.4-0.20201018111720-17ee19e23a5c
 	// ent-contrib provides ent and gqlgen templates for codegen

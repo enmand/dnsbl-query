@@ -12,3 +12,6 @@
 *.out
 
 /bin/
+
+# sqlite3 test database
+test.db
