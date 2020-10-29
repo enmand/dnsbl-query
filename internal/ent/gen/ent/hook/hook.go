@@ -48,6 +48,19 @@ func (f IPFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 	return f(ctx, mv)
 }
 
+// The OperationFunc type is an adapter to allow the use of ordinary
+// function as Operation mutator.
+type OperationFunc func(context.Context, *ent.OperationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OperationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.OperationMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OperationMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

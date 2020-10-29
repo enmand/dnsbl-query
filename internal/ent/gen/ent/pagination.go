@@ -16,6 +16,7 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblquery"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/dnsblresponse"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
+	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/operation"
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/user"
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -1059,6 +1060,282 @@ var DefaultIPOrder = &IPOrder{
 		field: ip.FieldID,
 		toCursor: func(i *IP) Cursor {
 			return Cursor{ID: i.ID}
+		},
+	},
+}
+
+// OperationEdge is the edge representation of Operation.
+type OperationEdge struct {
+	Node   *Operation `json:"node"`
+	Cursor Cursor     `json:"cursor"`
+}
+
+// OperationConnection is the connection containing edges to Operation.
+type OperationConnection struct {
+	Edges      []*OperationEdge `json:"edges"`
+	PageInfo   PageInfo         `json:"pageInfo"`
+	TotalCount int              `json:"totalCount"`
+}
+
+// OperationPaginateOption enables pagination customization.
+type OperationPaginateOption func(*operationPager) error
+
+// WithOperationOrder configures pagination ordering.
+func WithOperationOrder(order *OperationOrder) OperationPaginateOption {
+	if order == nil {
+		order = DefaultOperationOrder
+	}
+	o := *order
+	return func(pager *operationPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultOperationOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithOperationFilter configures pagination filter.
+func WithOperationFilter(filter func(*OperationQuery) (*OperationQuery, error)) OperationPaginateOption {
+	return func(pager *operationPager) error {
+		if filter == nil {
+			return errors.New("OperationQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type operationPager struct {
+	order  *OperationOrder
+	filter func(*OperationQuery) (*OperationQuery, error)
+}
+
+func newOperationPager(opts []OperationPaginateOption) (*operationPager, error) {
+	pager := &operationPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultOperationOrder
+	}
+	return pager, nil
+}
+
+func (p *operationPager) applyFilter(query *OperationQuery) (*OperationQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *operationPager) toCursor(o *Operation) Cursor {
+	return p.order.Field.toCursor(o)
+}
+
+func (p *operationPager) applyCursors(query *OperationQuery, after, before *Cursor) *OperationQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultOperationOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *operationPager) applyOrder(query *OperationQuery, reverse bool) *OperationQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultOperationOrder.Field {
+		query = query.Order(Asc(DefaultOperationOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Operation.
+func (o *OperationQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...OperationPaginateOption,
+) (*OperationConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newOperationPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if o, err = pager.applyFilter(o); err != nil {
+		return nil, err
+	}
+
+	conn := &OperationConnection{Edges: []*OperationEdge{}}
+	if !hasCollectedField(ctx, edgesField) ||
+		first != nil && *first == 0 ||
+		last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := o.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) &&
+		hasCollectedField(ctx, totalCountField) {
+		count, err := o.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	o = pager.applyCursors(o, after, before)
+	o = pager.applyOrder(o, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		o = o.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		o = o.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := o.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Operation
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Operation {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Operation {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*OperationEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &OperationEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// OperationOrderFieldCreatedAt orders Operation by created_at.
+	OperationOrderFieldCreatedAt = &OperationOrderField{
+		field: operation.FieldCreatedAt,
+		toCursor: func(o *Operation) Cursor {
+			return Cursor{
+				ID:    o.ID,
+				Value: o.CreatedAt,
+			}
+		},
+	}
+	// OperationOrderFieldUpdatedAt orders Operation by updated_at.
+	OperationOrderFieldUpdatedAt = &OperationOrderField{
+		field: operation.FieldUpdatedAt,
+		toCursor: func(o *Operation) Cursor {
+			return Cursor{
+				ID:    o.ID,
+				Value: o.UpdatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f OperationOrderField) String() string {
+	var str string
+	switch f.field {
+	case operation.FieldCreatedAt:
+		str = "CREATED_AT"
+	case operation.FieldUpdatedAt:
+		str = "UPDATED_AT"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f OperationOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *OperationOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("OperationOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *OperationOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *OperationOrderFieldUpdatedAt
+	default:
+		return fmt.Errorf("%s is not a valid OperationOrderField", str)
+	}
+	return nil
+}
+
+// OperationOrderField defines the ordering field of Operation.
+type OperationOrderField struct {
+	field    string
+	toCursor func(*Operation) Cursor
+}
+
+// OperationOrder defines the ordering of Operation.
+type OperationOrder struct {
+	Direction OrderDirection       `json:"direction"`
+	Field     *OperationOrderField `json:"field"`
+}
+
+// DefaultOperationOrder is the default ordering of Operation.
+var DefaultOperationOrder = &OperationOrder{
+	Direction: OrderDirectionAsc,
+	Field: &OperationOrderField{
+		field: operation.FieldID,
+		toCursor: func(o *Operation) Cursor {
+			return Cursor{ID: o.ID}
 		},
 	},
 }

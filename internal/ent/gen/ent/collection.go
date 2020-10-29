@@ -69,6 +69,18 @@ func (i *IPQuery) collectField(ctx *graphql.OperationContext, field graphql.Coll
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (o *OperationQuery) CollectFields(ctx context.Context, satisfies ...string) *OperationQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		o = o.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return o
+}
+
+func (o *OperationQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *OperationQuery {
+	return o
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) *UserQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		u = u.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

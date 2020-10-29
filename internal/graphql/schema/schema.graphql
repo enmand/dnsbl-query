@@ -26,9 +26,30 @@ scalar Time
 "UUID represents UUID-based IDs"
 scalar UUID
 
+"Type of operation being preformed"
+enum OperationType {
+  IPDNSBL
+}
+
+"Status of the operation"
+enum OperationStatus {
+  IN_PROGRESS
+  DONE
+}
+
 "An operation can be used to check the progress of a background task"
-type Operation {
+type Operation implements Node {
+  "Unique ID of the enqueued operation"
   id: ID!
+
+  "Type of the enqueued operation. Only IPDNSBL is supported"
+  type: OperationType!
+
+  "IP Address to be checked"
+  ip_address: String!
+
+  "Status of the Operation"
+  status: OperationStatus!
 }
 
 "Query represents queries that the GraphQL service exposes"
@@ -40,6 +61,6 @@ type Query {
 
 "Mutations represent requests that will modify data"
 type Mutation {
-  enque(ip: [String!]): Operation
+  enque(ip: [String!]): [Operation]
 }
 

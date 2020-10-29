@@ -15,5 +15,8 @@ type DNSBLResponse func(*sql.Selector)
 // IP is the predicate function for ip builders.
 type IP func(*sql.Selector)
 
+// Operation is the predicate function for operation builders.
+type Operation func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

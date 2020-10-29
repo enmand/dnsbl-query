@@ -3,10 +3,89 @@
 package model
 
 import (
-	"github.com/google/uuid"
+	"fmt"
+	"io"
+	"strconv"
 )
 
-// An operation can be used to check the progress of a background task
-type Operation struct {
-	ID uuid.UUID `json:"id"`
+// Status of the operation
+type OperationStatus string
+
+const (
+	OperationStatusInProgress OperationStatus = "IN_PROGRESS"
+	OperationStatusDone       OperationStatus = "DONE"
+)
+
+var AllOperationStatus = []OperationStatus{
+	OperationStatusInProgress,
+	OperationStatusDone,
+}
+
+func (e OperationStatus) IsValid() bool {
+	switch e {
+	case OperationStatusInProgress, OperationStatusDone:
+		return true
+	}
+	return false
+}
+
+func (e OperationStatus) String() string {
+	return string(e)
+}
+
+func (e *OperationStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = OperationStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid OperationStatus", str)
+	}
+	return nil
+}
+
+func (e OperationStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// Type of operation being preformed
+type OperationType string
+
+const (
+	OperationTypeIPDNSBl OperationType = "IPDNSBL"
+)
+
+var AllOperationType = []OperationType{
+	OperationTypeIPDNSBl,
+}
+
+func (e OperationType) IsValid() bool {
+	switch e {
+	case OperationTypeIPDNSBl:
+		return true
+	}
+	return false
+}
+
+func (e OperationType) String() string {
+	return string(e)
+}
+
+func (e *OperationType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = OperationType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid OperationType", str)
+	}
+	return nil
+}
+
+func (e OperationType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

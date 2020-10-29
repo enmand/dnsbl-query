@@ -89,6 +89,30 @@ var (
 			},
 		},
 	}
+	// OperationsColumns holds the columns for the "operations" table.
+	OperationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"IPDNSBL"}},
+		{Name: "ip_address", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"WAITING", "IN_PROGRESS", "DONE"}},
+		{Name: "done_at", Type: field.TypeTime, Nullable: true},
+	}
+	// OperationsTable holds the schema information for the "operations" table.
+	OperationsTable = &schema.Table{
+		Name:        "operations",
+		Columns:     OperationsColumns,
+		PrimaryKey:  []*schema.Column{OperationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+		Indexes: []*schema.Index{
+			{
+				Name:    "operation_updated_at_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{OperationsColumns[2], OperationsColumns[1]},
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -121,6 +145,7 @@ var (
 		DnsblQueriesTable,
 		DnsblResponsesTable,
 		IpsTable,
+		OperationsTable,
 		UsersTable,
 	}
 )
