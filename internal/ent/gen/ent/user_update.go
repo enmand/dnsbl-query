@@ -54,8 +54,8 @@ func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
 }
 
 // SetPassword sets the password field.
-func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
-	uu.mutation.SetPassword(s)
+func (uu *UserUpdate) SetPassword(b []byte) *UserUpdate {
+	uu.mutation.SetPassword(b)
 	return uu
 }
 
@@ -165,7 +165,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Password(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeBytes,
 			Value:  value,
 			Column: user.FieldPassword,
 		})
@@ -215,8 +215,8 @@ func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
 }
 
 // SetPassword sets the password field.
-func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
-	uuo.mutation.SetPassword(s)
+func (uuo *UserUpdateOne) SetPassword(b []byte) *UserUpdateOne {
+	uuo.mutation.SetPassword(b)
 	return uuo
 }
 
@@ -324,7 +324,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Password(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeBytes,
 			Value:  value,
 			Column: user.FieldPassword,
 		})

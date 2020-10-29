@@ -24,7 +24,7 @@ func CreateUser(ctx context.Context, cl *ent.Client, username, password string) 
 
 	_, err = cl.User.Create().
 		SetUsername(username).
-		SetPassword(string(hash)).
+		SetPassword(hash).
 		Save(ctx)
 	if err != nil {
 		return fmt.Errorf("creating user: %w", err)

@@ -95,7 +95,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "username", Type: field.TypeString, Unique: true},
-		{Name: "password", Type: field.TypeString},
+		{Name: "password", Type: field.TypeBytes},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

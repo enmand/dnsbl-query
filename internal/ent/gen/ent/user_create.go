@@ -56,8 +56,8 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 }
 
 // SetPassword sets the password field.
-func (uc *UserCreate) SetPassword(s string) *UserCreate {
-	uc.mutation.SetPassword(s)
+func (uc *UserCreate) SetPassword(b []byte) *UserCreate {
+	uc.mutation.SetPassword(b)
 	return uc
 }
 
@@ -202,7 +202,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.Password(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeBytes,
 			Value:  value,
 			Column: user.FieldPassword,
 		})

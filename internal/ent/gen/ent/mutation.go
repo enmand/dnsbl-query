@@ -1585,7 +1585,7 @@ type UserMutation struct {
 	created_at    *time.Time
 	updated_at    *time.Time
 	username      *string
-	password      *string
+	password      *[]byte
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*User, error)
@@ -1789,12 +1789,12 @@ func (m *UserMutation) ResetUsername() {
 }
 
 // SetPassword sets the password field.
-func (m *UserMutation) SetPassword(s string) {
-	m.password = &s
+func (m *UserMutation) SetPassword(b []byte) {
+	m.password = &b
 }
 
 // Password returns the password value in the mutation.
-func (m *UserMutation) Password() (r string, exists bool) {
+func (m *UserMutation) Password() (r []byte, exists bool) {
 	v := m.password
 	if v == nil {
 		return
@@ -1806,7 +1806,7 @@ func (m *UserMutation) Password() (r string, exists bool) {
 // If the User object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *UserMutation) OldPassword(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldPassword(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldPassword is allowed only on UpdateOne operations")
 	}
@@ -1916,7 +1916,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetUsername(v)
 		return nil
 	case user.FieldPassword:
-		v, ok := value.(string)
+		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
