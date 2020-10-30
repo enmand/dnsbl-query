@@ -37,7 +37,7 @@ spec:
             - name: DATABASE_URI
               value: {{ .Values.database.uri }}
             - name: DATABASE_DRIVER
-              value: {{ .Values.database.diver}}
+              value: {{ .Values.database.driver}}
           ports:
             - name: http
               containerPort: 8080
