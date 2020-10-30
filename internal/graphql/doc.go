@@ -3,6 +3,5 @@
 // be autobinded.
 //
 // entgql from ent-contrib is used for pagination, and Relay Node Support.
-// Transactional mutations are available, but not currently used, as enqueue only
-// preforms a single database update.
+// Transactional mutations are available, and are used in the enqeue mutation.
 package graphql
