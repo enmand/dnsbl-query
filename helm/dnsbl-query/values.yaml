@@ -18,21 +18,20 @@ storageClass: ""
 # persistence is for the sqlite3 database file
 persistence:
   enabled: true
-  drupal:
-    accessMode: ReadWriteOnce
-    size: 8Gi
+  accessMode: ReadWriteMany
+  size: 8Gi
 
-    ## A manually managed Persistent Volume Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    ##
+  ## A manually managed Persistent Volume Claim
+  ## Requires persistence.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  ##
 
-    ## If defined, the data volume will mount to the specified hostPath.
-    ## Requires persistence.enabled: true
-    ## Requires persistence.existingClaim: nil|false
-    ## Default: nil.
-    ##
-    # hostPath:
+  ## If defined, the data volume will mount to the specified hostPath.
+  ## Requires persistence.enabled: true
+  ## Requires persistence.existingClaim: nil|false
+  ## Default: nil.
+  ##
+  # hostPath:
 
 volumeMounts:
   mountPath: /db
