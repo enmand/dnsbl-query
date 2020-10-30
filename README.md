@@ -19,17 +19,46 @@ to get started with limited configuration time.
 You can also run the binary locally using the following flow:
 
 ```zsh
-mage -v build:binary
-./bin/dnsbl-query <configuration>
+mage -v go:build
+./bin/dnsbl-query
 ```
 
-### Deploying dnsbl-query
+Configuration can be provided either by environment variables, or CLI flags. You
+can get a full list of configuration using `-h` on the bianry.
+
+#### Release
+
+The CI/CD tooling will automatically take care of pushing the latest version of
+the built image to Dockerhub. To run this manually, you can use
+
+```zsh
+mage -v docker:push
+```
+
+#### Deploying dnsbl-query
 
 You can use the [Helm](https://helm.sh) chart to configure manifests, or deploy
 directly into your cluster.
 
-TODO
+The Helm chart is automatically linted and tested on PR.
 
-## Contributing
+### Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to contribute
+Pull requests are welcome to make changes. All pull requests must complete their
+GitHub workflows successfully before they will be merged.
+
+Many packages that contains some non-generated code has a `doc.go` which explains
+the package level documentation. A quick run down of the internal packages:
+
+- `internal/auth` -- authentication tooling and middlewares for the GraphQL service
+- `internal/cmd` -- entry points and sub-commands
+- `internal/dnsbl` -- DNSBL query service
+- `internal/ent` -- [ent](github.com/facebook/ent) custom compiler with gqlgen support
+- `internal/ent/schema` -- entity schema definitions
+- `internal/ent/schema/mixin` -- entity mixins for additional common fields
+- `internal/flags` -- flag definitions for entry points
+- `internal/graphql` -- gqlgen-based GraphQL generation and server
+- `internal/graphql/schema` -- *.graphql schema definitions
+- `internal/graphql/internal/model` -- non-ent models for gqlgen autobinding
+- `internal/graphql/internal/resolvers` -- gqlgen resolvers
+- `internal/worker` -- background worker library
