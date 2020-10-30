@@ -35,4 +35,6 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.1
 	// zap is a typed logging library from uber
 	go.uber.org/zap v1.16.0
+	// git library for build tooling
+	gopkg.in/src-d/go-git.v4 v4.13.1
 )
