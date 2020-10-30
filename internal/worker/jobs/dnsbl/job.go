@@ -53,6 +53,9 @@ func (s *DNSBLJob) Execute(ctx context.Context, ipaddr string) error {
 		}
 	}
 
+	// TODO we should check here to make sure some time passed (e.g. 1 day)
+	// before we check an IP again
+
 	query, err := tx.DNSBLQuery.Create().
 		SetIPAddress(ipe).
 		Save(ctx)
