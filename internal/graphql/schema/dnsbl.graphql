@@ -101,4 +101,10 @@ type DNSBLResponse implements Node {
 
   "The query this response represents a result for"
   query: DNSBLQuery!
+
+  "The response code represented by this response"
+  code: String!
+
+  "Description a human readable representation of the error code"
+  description: String!
 }

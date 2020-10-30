@@ -64,6 +64,7 @@ type Server struct {
 
 // Start starts the Server, and blocks
 func (s *Server) Start() error {
+	s.logger.Infof("listening on %s", Flags.Listen)
 	return http.ListenAndServe(Flags.Listen, s.handler)
 }
 
@@ -109,6 +110,7 @@ func New(opts ...Option) (*Server, error) {
 		options.client = cl
 	}
 
+	options.logger.Info("migrating schema")
 	ctx := context.Background()
 	err := options.client.Schema.Create(ctx, migrate.WithDropColumn(true), migrate.WithDropIndex(true))
 	if err != nil {
