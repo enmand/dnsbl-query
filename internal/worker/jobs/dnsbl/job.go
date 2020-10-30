@@ -10,6 +10,8 @@ import (
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
 )
 
+const checkTime = 24 * time.Hour
+
 // DNSBLJob represents a worker.Job to query a DNSBL service
 type DNSBLJob struct {
 	cl    *ent.Client
@@ -47,14 +49,17 @@ func (s *DNSBLJob) Execute(ctx context.Context, ipaddr string) error {
 	case err != nil:
 		return fmt.Errorf("ip lookup: %w", err)
 	default:
+		nextAllowed := ipe.UpdatedAt.Add(checkTime)
+		if time.Now().Before(nextAllowed) {
+			// rollback so the job isn't requeued
+			_ = tx.Rollback()
+			return fmt.Errorf("please wait before checking the IP address again")
+		}
 		_, err = ipe.Update().SetUpdatedAt(time.Now()).Save(ctx)
 		if err != nil {
 			return fmt.Errorf("ip updated at: %w", err)
 		}
 	}
-
-	// TODO we should check here to make sure some time passed (e.g. 1 day)
-	// before we check an IP again
 
 	query, err := tx.DNSBLQuery.Create().
 		SetIPAddress(ipe).
