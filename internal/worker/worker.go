@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/gammazero/workerpool"
@@ -101,6 +102,13 @@ func (w *worker) Register(opType operation.Type, j Job) {
 // prepJob prepares a Job to run run asyncronously
 func (w *worker) prepJob(ctx context.Context, j Job, op *ent.Operation) (func(), error) {
 	w.log.Infof("job:%s progressed", op.Type)
+
+	// TODO: this is super hacky... sqlite3 database tables get locked. Another
+	// database system would allow for better concurrency
+	// sleep for a random duration between [300, 1500) to add some jitter into the
+	// log runs.
+	jitter := time.Duration((rand.Intn(1000) + 300) % 1500)
+	time.Sleep(jitter * time.Millisecond)
 
 	_, err := op.Update().SetStatus(operation.StatusIN_PROGRESS).Save(ctx)
 	if err != nil {
