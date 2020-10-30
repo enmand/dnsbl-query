@@ -26,6 +26,7 @@ var (
 	ggen   = sh.RunCmd("go", "generate")
 	gbuild = sh.RunCmd("go", "build")
 
+	dpush  = sh.RunCmd("docker", "push")
 	dbuild = sh.RunCmd("docker", "build")
 	dtag   = sh.RunCmd("docker", "tag")
 )
@@ -69,4 +70,10 @@ func (Docker) Tag() error {
 
 	hash := ref.Hash().String()
 	return dtag(imageRepo+":latest", fmt.Sprintf("%s:%s", imageRepo, hash))
+}
+
+func (Docker) Push() error {
+	mg.Deps(Docker.Tag)
+
+	return dpush(imageRepo)
 }
