@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 )
 
 type spamhaus struct {
@@ -25,7 +26,7 @@ func NewSpamhaus(opts ...Option) DNSBL {
 		opt(options)
 	}
 	if options.network == "" {
-		options.network = "tcp"
+		options.network = "ip"
 	}
 
 	r := &net.Resolver{
@@ -43,7 +44,7 @@ func NewSpamhaus(opts ...Option) DNSBL {
 
 // Query does a DNSBL query for a single IP address to Spamhaus
 func (sh *spamhaus) Query(ctx context.Context, ip string) (*Response, error) {
-	ip = reverse(ip)
+	ip = reverseIP(ip)
 	ip = fmt.Sprintf("%s.zen.spamhaus.org", ip)
 
 	resp, err := sh.resolver.LookupIP(ctx, sh.network, ip)
@@ -53,7 +54,8 @@ func (sh *spamhaus) Query(ctx context.Context, ip string) (*Response, error) {
 
 	r := newResponse()
 	for _, ip := range resp {
-		r.Codes = append(r.Codes, Code(ip))
+		fmt.Printf("\ncode: %s\n", ip.String())
+		r.Codes = append(r.Codes, Code(ip.String()))
 	}
 
 	return r, nil
@@ -68,12 +70,14 @@ func customDialer(network, server string) dialerFunc {
 	}
 }
 
-func reverse(str string) string {
-	rs := []rune(str)
-	last := len(rs) - 1
-	for i := 0; i < len(rs)/2; i++ {
-		rs[i], rs[last-i] = rs[last-i], rs[i]
+// reverseIP returns a reverse-notation for given IP address
+func reverseIP(str string) string {
+	octs := strings.Split(str, ".")
+
+	last := len(octs) - 1
+	for i := 0; i < len(octs)/2; i++ {
+		octs[i], octs[last-i] = octs[last-i], octs[i]
 	}
 
-	return string(rs)
+	return strings.Join(octs, ".")
 }
