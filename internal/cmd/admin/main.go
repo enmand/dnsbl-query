@@ -45,7 +45,7 @@ func (c *addUserCmd) Execute(args []string) error {
 	// TODO: ent open logic with options+migration should be in common pkg
 	cl, err := ent.Open(c.DatabaseDriver, c.DatabaseURI)
 	if err != nil {
-		return fmt.Errorf("")
+		return fmt.Errorf("opening database: %w", err)
 	}
 	err = cl.Schema.Create(ctx, migrate.WithDropColumn(true), migrate.WithDropIndex(true))
 	if err != nil {
