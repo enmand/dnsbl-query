@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r *mutationResolver) Enque(ctx context.Context, ip []string) ([]*ent.Operation, error) {
+func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*ent.Operation, error) {
 	ops := []*ent.Operation{}
 
 	for _, i := range ip {
