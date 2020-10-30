@@ -98,7 +98,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Enque func(childComplexity int, ip []string) int
+		Enqueue func(childComplexity int, ip []string) int
 	}
 
 	Operation struct {
@@ -134,7 +134,7 @@ type IPResolver interface {
 	Queries(ctx context.Context, obj *ent.IP, after *ent.Cursor, before *ent.Cursor, first *int, last *int, orderBy *ent.DNSBLQueryOrder) (*ent.DNSBLQueryConnection, error)
 }
 type MutationResolver interface {
-	Enque(ctx context.Context, ip []string) ([]*ent.Operation, error)
+	Enqueue(ctx context.Context, ip []string) ([]*ent.Operation, error)
 }
 type OperationResolver interface {
 	Type(ctx context.Context, obj *ent.Operation) (model.OperationType, error)
@@ -346,17 +346,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.IP.UpdatedAt(childComplexity), true
 
-	case "Mutation.enque":
-		if e.complexity.Mutation.Enque == nil {
+	case "Mutation.enqueue":
+		if e.complexity.Mutation.Enqueue == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_enque_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_enqueue_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Enque(childComplexity, args["ip"].([]string)), true
+		return e.complexity.Mutation.Enqueue(childComplexity, args["ip"].([]string)), true
 
 	case "Operation.id":
 		if e.complexity.Operation.ID == nil {
@@ -670,7 +670,7 @@ type Query {
 
 "Mutations represent requests that will modify data"
 type Mutation {
-  enque(ip: [String!]): [Operation]
+  enqueue(ip: [String!]): [Operation]
 }
 
 `, BuiltIn: false},
@@ -774,7 +774,7 @@ func (ec *executionContext) field_IP_queries_args(ctx context.Context, rawArgs m
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_enque_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_enqueue_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 []string
@@ -1743,7 +1743,7 @@ func (ec *executionContext) _IP_queries(ctx context.Context, field graphql.Colle
 	return ec.marshalODNSBLQueryConnection2ᚖgithubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋentᚋgenᚋentᚐDNSBLQueryConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_enque(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_enqueue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1760,7 +1760,7 @@ func (ec *executionContext) _Mutation_enque(ctx context.Context, field graphql.C
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_enque_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_enqueue_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1768,7 +1768,7 @@ func (ec *executionContext) _Mutation_enque(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Enque(rctx, args["ip"].([]string))
+		return ec.resolvers.Mutation().Enqueue(rctx, args["ip"].([]string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3678,8 +3678,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "enque":
-			out.Values[i] = ec._Mutation_enque(ctx, field)
+		case "enqueue":
+			out.Values[i] = ec._Mutation_enqueue(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

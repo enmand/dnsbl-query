@@ -61,6 +61,6 @@ type Query {
 
 "Mutations represent requests that will modify data"
 type Mutation {
-  enque(ip: [String!]): [Operation]
+  enqueue(ip: [String!]): [Operation]
 }
 
