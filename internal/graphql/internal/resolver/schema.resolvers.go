@@ -6,6 +6,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"net"
 
 	"github.com/enmand/dnsbl-query/internal/ent/gen/ent"
 	eip "github.com/enmand/dnsbl-query/internal/ent/gen/ent/ip"
@@ -17,9 +18,14 @@ import (
 
 func (r *mutationResolver) Enqueue(ctx context.Context, ip []string) ([]*ent.Operation, error) {
 	ops := []*ent.Operation{}
+	client := ent.FromContext(ctx)
 
 	for _, i := range ip {
-		op, err := r.client.Operation.Create().
+		if pip := net.ParseIP(i); pip == nil {
+			return nil, fmt.Errorf("invalid IP address: %s", i)
+		}
+
+		op, err := client.Operation.Create().
 			SetIPAddress(i).
 			SetType(operation.TypeIPDNSBL).
 			SetStatus(operation.StatusWAITING).
