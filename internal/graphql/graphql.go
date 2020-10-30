@@ -25,7 +25,8 @@ import (
 type GraphQLFlags struct {
 	flags.Database
 
-	Listen string `short:"p" long:"port" env:"PORT" description:"Port to run the server on" default:":8080"`
+	Port   string `short:"p" long:"port" env:"PORT" description:"Port to run the server on, listens on 0.0.0.0:PORT"`
+	Listen string `short:"l" long:"listen" env:"LISTEN" description:"Listen address to run the server on" default:":8080"`
 	Debug  bool   `long:"debug" env:"DEBUG" description:"If the server should be in debug mode"`
 }
 
@@ -64,6 +65,10 @@ type Server struct {
 
 // Start starts the Server, and blocks
 func (s *Server) Start() error {
+	if Flags.Port != "" {
+		Flags.Listen = fmt.Sprintf(":%s", Flags.Port)
+	}
+
 	s.logger.Infof("listening on %s", Flags.Listen)
 	return http.ListenAndServe(Flags.Listen, s.handler)
 }
