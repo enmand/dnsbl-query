@@ -1589,6 +1589,7 @@ type OperationMutation struct {
 	_type         *operation.Type
 	ip_address    *string
 	status        *operation.Status
+	error         *string
 	done_at       *time.Time
 	clearedFields map[string]struct{}
 	done          bool
@@ -1879,6 +1880,56 @@ func (m *OperationMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetError sets the error field.
+func (m *OperationMutation) SetError(s string) {
+	m.error = &s
+}
+
+// Error returns the error value in the mutation.
+func (m *OperationMutation) Error() (r string, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old error value of the Operation.
+// If the Operation object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *OperationMutation) OldError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldError is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ClearError clears the value of error.
+func (m *OperationMutation) ClearError() {
+	m.error = nil
+	m.clearedFields[operation.FieldError] = struct{}{}
+}
+
+// ErrorCleared returns if the field error was cleared in this mutation.
+func (m *OperationMutation) ErrorCleared() bool {
+	_, ok := m.clearedFields[operation.FieldError]
+	return ok
+}
+
+// ResetError reset all changes of the "error" field.
+func (m *OperationMutation) ResetError() {
+	m.error = nil
+	delete(m.clearedFields, operation.FieldError)
+}
+
 // SetDoneAt sets the done_at field.
 func (m *OperationMutation) SetDoneAt(t time.Time) {
 	m.done_at = &t
@@ -1943,7 +1994,7 @@ func (m *OperationMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *OperationMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, operation.FieldCreatedAt)
 	}
@@ -1958,6 +2009,9 @@ func (m *OperationMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, operation.FieldStatus)
+	}
+	if m.error != nil {
+		fields = append(fields, operation.FieldError)
 	}
 	if m.done_at != nil {
 		fields = append(fields, operation.FieldDoneAt)
@@ -1980,6 +2034,8 @@ func (m *OperationMutation) Field(name string) (ent.Value, bool) {
 		return m.IPAddress()
 	case operation.FieldStatus:
 		return m.Status()
+	case operation.FieldError:
+		return m.Error()
 	case operation.FieldDoneAt:
 		return m.DoneAt()
 	}
@@ -2001,6 +2057,8 @@ func (m *OperationMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldIPAddress(ctx)
 	case operation.FieldStatus:
 		return m.OldStatus(ctx)
+	case operation.FieldError:
+		return m.OldError(ctx)
 	case operation.FieldDoneAt:
 		return m.OldDoneAt(ctx)
 	}
@@ -2047,6 +2105,13 @@ func (m *OperationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetStatus(v)
 		return nil
+	case operation.FieldError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
+		return nil
 	case operation.FieldDoneAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -2087,6 +2152,9 @@ func (m *OperationMutation) ClearedFields() []string {
 	if m.FieldCleared(operation.FieldIPAddress) {
 		fields = append(fields, operation.FieldIPAddress)
 	}
+	if m.FieldCleared(operation.FieldError) {
+		fields = append(fields, operation.FieldError)
+	}
 	if m.FieldCleared(operation.FieldDoneAt) {
 		fields = append(fields, operation.FieldDoneAt)
 	}
@@ -2106,6 +2174,9 @@ func (m *OperationMutation) ClearField(name string) error {
 	switch name {
 	case operation.FieldIPAddress:
 		m.ClearIPAddress()
+		return nil
+	case operation.FieldError:
+		m.ClearError()
 		return nil
 	case operation.FieldDoneAt:
 		m.ClearDoneAt()
@@ -2133,6 +2204,9 @@ func (m *OperationMutation) ResetField(name string) error {
 		return nil
 	case operation.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case operation.FieldError:
+		m.ResetError()
 		return nil
 	case operation.FieldDoneAt:
 		m.ResetDoneAt()

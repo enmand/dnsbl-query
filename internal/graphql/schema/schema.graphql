@@ -33,8 +33,10 @@ enum OperationType {
 
 "Status of the operation"
 enum OperationStatus {
+  WAITING
   IN_PROGRESS
   DONE
+  ERROR
 }
 
 "An operation can be used to check the progress of a background task"
@@ -50,6 +52,9 @@ type Operation implements Node {
 
   "Status of the Operation"
   status: OperationStatus!
+
+  "Error description if the Status is ERROR"
+  error: String
 }
 
 "Query represents queries that the GraphQL service exposes"

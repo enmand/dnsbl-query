@@ -193,7 +193,7 @@ func (o *Operation) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     o.ID,
 		Type:   "Operation",
-		Fields: make([]*Field, 6),
+		Fields: make([]*Field, 7),
 		Edges:  make([]*Edge, 0),
 	}
 	var buf []byte
@@ -237,10 +237,18 @@ func (o *Operation) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "status",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(o.DoneAt); err != nil {
+	if buf, err = json.Marshal(o.Error); err != nil {
 		return nil, err
 	}
 	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "error",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(o.DoneAt); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
 		Type:  "time.Time",
 		Name:  "done_at",
 		Value: string(buf),

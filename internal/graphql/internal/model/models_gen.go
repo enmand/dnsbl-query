@@ -12,18 +12,22 @@ import (
 type OperationStatus string
 
 const (
+	OperationStatusWaiting    OperationStatus = "WAITING"
 	OperationStatusInProgress OperationStatus = "IN_PROGRESS"
 	OperationStatusDone       OperationStatus = "DONE"
+	OperationStatusError      OperationStatus = "ERROR"
 )
 
 var AllOperationStatus = []OperationStatus{
+	OperationStatusWaiting,
 	OperationStatusInProgress,
 	OperationStatusDone,
+	OperationStatusError,
 }
 
 func (e OperationStatus) IsValid() bool {
 	switch e {
-	case OperationStatusInProgress, OperationStatusDone:
+	case OperationStatusWaiting, OperationStatusInProgress, OperationStatusDone, OperationStatusError:
 		return true
 	}
 	return false

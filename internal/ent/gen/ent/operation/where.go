@@ -114,6 +114,13 @@ func IPAddress(v string) predicate.Operation {
 	})
 }
 
+// Error applies equality check predicate on the "error" field. It's identical to ErrorEQ.
+func Error(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldError), v))
+	})
+}
+
 // DoneAt applies equality check predicate on the "done_at" field. It's identical to DoneAtEQ.
 func DoneAt(v time.Time) predicate.Operation {
 	return predicate.Operation(func(s *sql.Selector) {
@@ -491,6 +498,131 @@ func StatusNotIn(vs ...Status) predicate.Operation {
 			return
 		}
 		s.Where(sql.NotIn(s.C(FieldStatus), v...))
+	})
+}
+
+// ErrorEQ applies the EQ predicate on the "error" field.
+func ErrorEQ(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldError), v))
+	})
+}
+
+// ErrorNEQ applies the NEQ predicate on the "error" field.
+func ErrorNEQ(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldError), v))
+	})
+}
+
+// ErrorIn applies the In predicate on the "error" field.
+func ErrorIn(vs ...string) predicate.Operation {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Operation(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldError), v...))
+	})
+}
+
+// ErrorNotIn applies the NotIn predicate on the "error" field.
+func ErrorNotIn(vs ...string) predicate.Operation {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Operation(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldError), v...))
+	})
+}
+
+// ErrorGT applies the GT predicate on the "error" field.
+func ErrorGT(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldError), v))
+	})
+}
+
+// ErrorGTE applies the GTE predicate on the "error" field.
+func ErrorGTE(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldError), v))
+	})
+}
+
+// ErrorLT applies the LT predicate on the "error" field.
+func ErrorLT(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldError), v))
+	})
+}
+
+// ErrorLTE applies the LTE predicate on the "error" field.
+func ErrorLTE(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldError), v))
+	})
+}
+
+// ErrorContains applies the Contains predicate on the "error" field.
+func ErrorContains(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldError), v))
+	})
+}
+
+// ErrorHasPrefix applies the HasPrefix predicate on the "error" field.
+func ErrorHasPrefix(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldError), v))
+	})
+}
+
+// ErrorHasSuffix applies the HasSuffix predicate on the "error" field.
+func ErrorHasSuffix(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldError), v))
+	})
+}
+
+// ErrorIsNil applies the IsNil predicate on the "error" field.
+func ErrorIsNil() predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldError)))
+	})
+}
+
+// ErrorNotNil applies the NotNil predicate on the "error" field.
+func ErrorNotNil() predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldError)))
+	})
+}
+
+// ErrorEqualFold applies the EqualFold predicate on the "error" field.
+func ErrorEqualFold(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldError), v))
+	})
+}
+
+// ErrorContainsFold applies the ContainsFold predicate on the "error" field.
+func ErrorContainsFold(v string) predicate.Operation {
+	return predicate.Operation(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldError), v))
 	})
 }
 

@@ -75,6 +75,20 @@ func (oc *OperationCreate) SetStatus(o operation.Status) *OperationCreate {
 	return oc
 }
 
+// SetError sets the error field.
+func (oc *OperationCreate) SetError(s string) *OperationCreate {
+	oc.mutation.SetError(s)
+	return oc
+}
+
+// SetNillableError sets the error field if the given value is not nil.
+func (oc *OperationCreate) SetNillableError(s *string) *OperationCreate {
+	if s != nil {
+		oc.SetError(*s)
+	}
+	return oc
+}
+
 // SetDoneAt sets the done_at field.
 func (oc *OperationCreate) SetDoneAt(t time.Time) *OperationCreate {
 	oc.mutation.SetDoneAt(t)
@@ -253,6 +267,14 @@ func (oc *OperationCreate) createSpec() (*Operation, *sqlgraph.CreateSpec) {
 			Column: operation.FieldStatus,
 		})
 		_node.Status = value
+	}
+	if value, ok := oc.mutation.Error(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: operation.FieldError,
+		})
+		_node.Error = value
 	}
 	if value, ok := oc.mutation.DoneAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

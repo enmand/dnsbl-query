@@ -102,6 +102,7 @@ type ComplexityRoot struct {
 	}
 
 	Operation struct {
+		Error     func(childComplexity int) int
 		ID        func(childComplexity int) int
 		IPAddress func(childComplexity int) int
 		Status    func(childComplexity int) int
@@ -357,6 +358,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Enqueue(childComplexity, args["ip"].([]string)), true
+
+	case "Operation.error":
+		if e.complexity.Operation.Error == nil {
+			break
+		}
+
+		return e.complexity.Operation.Error(childComplexity), true
 
 	case "Operation.id":
 		if e.complexity.Operation.ID == nil {
@@ -642,8 +650,10 @@ enum OperationType {
 
 "Status of the operation"
 enum OperationStatus {
+  WAITING
   IN_PROGRESS
   DONE
+  ERROR
 }
 
 "An operation can be used to check the progress of a background task"
@@ -659,6 +669,9 @@ type Operation implements Node {
 
   "Status of the Operation"
   status: OperationStatus!
+
+  "Error description if the Status is ERROR"
+  error: String
 }
 
 "Query represents queries that the GraphQL service exposes"
@@ -1920,6 +1933,38 @@ func (ec *executionContext) _Operation_status(ctx context.Context, field graphql
 	res := resTmp.(model.OperationStatus)
 	fc.Result = res
 	return ec.marshalNOperationStatus2githubᚗcomᚋenmandᚋdnsblᚑqueryᚋinternalᚋgraphqlᚋinternalᚋmodelᚐOperationStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Operation_error(ctx context.Context, field graphql.CollectedField, obj *ent.Operation) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Operation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Error, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
@@ -3740,6 +3785,8 @@ func (ec *executionContext) _Operation(ctx context.Context, sel ast.SelectionSet
 				}
 				return res
 			})
+		case "error":
+			out.Values[i] = ec._Operation_error(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

@@ -27,6 +27,8 @@ type Operation struct {
 	IPAddress string `json:"ip_address,omitempty"`
 	// Status holds the value of the "status" field.
 	Status operation.Status `json:"status,omitempty"`
+	// Error holds the value of the "error" field.
+	Error string `json:"error,omitempty"`
 	// DoneAt holds the value of the "done_at" field.
 	DoneAt time.Time `json:"done_at,omitempty"`
 }
@@ -40,6 +42,7 @@ func (*Operation) scanValues() []interface{} {
 		&sql.NullString{}, // type
 		&sql.NullString{}, // ip_address
 		&sql.NullString{}, // status
+		&sql.NullString{}, // error
 		&sql.NullTime{},   // done_at
 	}
 }
@@ -81,8 +84,13 @@ func (o *Operation) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		o.Status = operation.Status(value.String)
 	}
-	if value, ok := values[5].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field done_at", values[5])
+	if value, ok := values[5].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field error", values[5])
+	} else if value.Valid {
+		o.Error = value.String
+	}
+	if value, ok := values[6].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field done_at", values[6])
 	} else if value.Valid {
 		o.DoneAt = value.Time
 	}
@@ -122,6 +130,8 @@ func (o *Operation) String() string {
 	builder.WriteString(o.IPAddress)
 	builder.WriteString(", status=")
 	builder.WriteString(fmt.Sprintf("%v", o.Status))
+	builder.WriteString(", error=")
+	builder.WriteString(o.Error)
 	builder.WriteString(", done_at=")
 	builder.WriteString(o.DoneAt.Format(time.ANSIC))
 	builder.WriteByte(')')

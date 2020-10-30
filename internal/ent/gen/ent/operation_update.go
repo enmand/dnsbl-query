@@ -79,6 +79,26 @@ func (ou *OperationUpdate) SetStatus(o operation.Status) *OperationUpdate {
 	return ou
 }
 
+// SetError sets the error field.
+func (ou *OperationUpdate) SetError(s string) *OperationUpdate {
+	ou.mutation.SetError(s)
+	return ou
+}
+
+// SetNillableError sets the error field if the given value is not nil.
+func (ou *OperationUpdate) SetNillableError(s *string) *OperationUpdate {
+	if s != nil {
+		ou.SetError(*s)
+	}
+	return ou
+}
+
+// ClearError clears the value of error.
+func (ou *OperationUpdate) ClearError() *OperationUpdate {
+	ou.mutation.ClearError()
+	return ou
+}
+
 // SetDoneAt sets the done_at field.
 func (ou *OperationUpdate) SetDoneAt(t time.Time) *OperationUpdate {
 	ou.mutation.SetDoneAt(t)
@@ -244,6 +264,19 @@ func (ou *OperationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: operation.FieldStatus,
 		})
 	}
+	if value, ok := ou.mutation.Error(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: operation.FieldError,
+		})
+	}
+	if ou.mutation.ErrorCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: operation.FieldError,
+		})
+	}
 	if value, ok := ou.mutation.DoneAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -324,6 +357,26 @@ func (ouo *OperationUpdateOne) ClearIPAddress() *OperationUpdateOne {
 // SetStatus sets the status field.
 func (ouo *OperationUpdateOne) SetStatus(o operation.Status) *OperationUpdateOne {
 	ouo.mutation.SetStatus(o)
+	return ouo
+}
+
+// SetError sets the error field.
+func (ouo *OperationUpdateOne) SetError(s string) *OperationUpdateOne {
+	ouo.mutation.SetError(s)
+	return ouo
+}
+
+// SetNillableError sets the error field if the given value is not nil.
+func (ouo *OperationUpdateOne) SetNillableError(s *string) *OperationUpdateOne {
+	if s != nil {
+		ouo.SetError(*s)
+	}
+	return ouo
+}
+
+// ClearError clears the value of error.
+func (ouo *OperationUpdateOne) ClearError() *OperationUpdateOne {
+	ouo.mutation.ClearError()
 	return ouo
 }
 
@@ -488,6 +541,19 @@ func (ouo *OperationUpdateOne) sqlSave(ctx context.Context) (_node *Operation, e
 			Type:   field.TypeEnum,
 			Value:  value,
 			Column: operation.FieldStatus,
+		})
+	}
+	if value, ok := ouo.mutation.Error(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: operation.FieldError,
+		})
+	}
+	if ouo.mutation.ErrorCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: operation.FieldError,
 		})
 	}
 	if value, ok := ouo.mutation.DoneAt(); ok {

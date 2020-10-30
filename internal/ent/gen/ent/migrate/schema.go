@@ -96,7 +96,8 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"IPDNSBL"}},
 		{Name: "ip_address", Type: field.TypeString, Nullable: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"WAITING", "IN_PROGRESS", "DONE"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"WAITING", "IN_PROGRESS", "DONE", "ERROR"}},
+		{Name: "error", Type: field.TypeString, Nullable: true},
 		{Name: "done_at", Type: field.TypeTime, Nullable: true},
 	}
 	// OperationsTable holds the schema information for the "operations" table.
