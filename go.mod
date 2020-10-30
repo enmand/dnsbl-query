@@ -11,6 +11,8 @@ require (
 	github.com/facebook/ent v0.4.4-0.20201018111720-17ee19e23a5c
 	// ent-contrib provides ent and gqlgen templates for codegen
 	github.com/facebookincubator/ent-contrib v0.0.0-20201022175118-63295bc19d1b
+	// workerpool is an in-memory woker pool using goroutines
+	github.com/gammazero/workerpool v1.1.1
 	// golangci-lint preforms linting in CI/CD or development phases
 	github.com/golangci/golangci-lint v1.32.0
 	// uuid is used to generate new UUID-based IDs for entities
