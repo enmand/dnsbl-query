@@ -26,6 +26,8 @@ const (
 	FieldIPAddress = "ip_address"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldError holds the string denoting the error field in the database.
+	FieldError = "error"
 	// FieldDoneAt holds the string denoting the done_at field in the database.
 	FieldDoneAt = "done_at"
 
@@ -41,6 +43,7 @@ var Columns = []string{
 	FieldType,
 	FieldIPAddress,
 	FieldStatus,
+	FieldError,
 	FieldDoneAt,
 }
 
@@ -95,6 +98,7 @@ const (
 	StatusWAITING     Status = "WAITING"
 	StatusIN_PROGRESS Status = "IN_PROGRESS"
 	StatusDONE        Status = "DONE"
+	StatusERROR       Status = "ERROR"
 )
 
 func (s Status) String() string {
@@ -104,7 +108,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusWAITING, StatusIN_PROGRESS, StatusDONE:
+	case StatusWAITING, StatusIN_PROGRESS, StatusDONE, StatusERROR:
 		return nil
 	default:
 		return fmt.Errorf("operation: invalid enum value for status field: %q", s)

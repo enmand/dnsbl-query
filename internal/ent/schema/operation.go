@@ -23,7 +23,8 @@ func (Operation) Fields() []ent.Field {
 			Values("IPDNSBL"),
 		field.String("ip_address").Optional(),
 		field.Enum("status").
-			Values("WAITING", "IN_PROGRESS", "DONE"),
+			Values("WAITING", "IN_PROGRESS", "DONE", "ERROR"),
+		field.String("error").Optional(),
 		field.Time("done_at").Optional(),
 	}
 }
