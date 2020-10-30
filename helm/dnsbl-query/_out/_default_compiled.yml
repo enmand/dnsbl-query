@@ -12,10 +12,10 @@ metadata:
 spec:
   # TODO: support other storage classes
   accessModes:
-    - 
+    - "ReadWriteMany"
   resources:
     requests:
-      storage:
+      storage: "8Gi"
 ---
 # Source: dnsbl-query/templates/service.yaml
 apiVersion: v1
