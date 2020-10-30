@@ -1,0 +1,219 @@
+---
+# Source: dnsbl-query/templates/pvc.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: dnsbl-query
+  labels:
+    app: dnsbl-query
+    chart: dnsbl-query-0.1.0
+    release: "dnsbl-query"
+    heritage: "Helm"
+spec:
+  # TODO: support other storage classes
+  accessModes:
+    - 
+  resources:
+    requests:
+      storage:
+---
+# Source: dnsbl-query/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: dnsbl-query
+  labels:
+    helm.sh/chart: dnsbl-query-0.1.0
+    app.kubernetes.io/name: dnsbl-query
+    app.kubernetes.io/instance: dnsbl-query
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dnsbl-query
+    app.kubernetes.io/instance: dnsbl-query
+---
+# Source: dnsbl-query/templates/deployment.service.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dnsbl-query
+  labels:
+    helm.sh/chart: dnsbl-query-0.1.0
+    app.kubernetes.io/name: dnsbl-query
+    app.kubernetes.io/instance: dnsbl-query
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dnsbl-query
+      app.kubernetes.io/instance: dnsbl-query
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dnsbl-query
+        app.kubernetes.io/instance: dnsbl-query
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: dnsbl-query
+          securityContext:
+            {}
+          image: "enmand/dnsbl-query:0.1.0"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URI
+              value: file:/db/test.db?cache=shared&_fk=1
+            - name: DATABASE_DRIVER
+              value: 
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+          volumeMounts:
+            - name: sqlite3-data
+              mountPath: /db
+      volumes:
+      - name: sqlite3-data
+        persistentVolumeClaim:
+          claimName: dnsbl-query-sqlite3
+---
+# Source: dnsbl-query/templates/deployment.worker.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dnsbl-query-worker
+  labels:
+    helm.sh/chart: dnsbl-query-0.1.0
+    app.kubernetes.io/name: dnsbl-query
+    app.kubernetes.io/instance: dnsbl-query
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dnsbl-query
+      app.kubernetes.io/instance: dnsbl-query
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dnsbl-query
+        app.kubernetes.io/instance: dnsbl-query
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: dnsbl-query
+          securityContext:
+            {}
+          image: "enmand/dnsbl-query:0.1.0"
+          command: ["/app/dnsbl-query", "worker"]
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URI
+              value: file:/db/test.db?cache=shared&_fk=1
+            - name: DATABASE_DRIVER
+              value: 
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+---
+# Source: dnsbl-query/templates/hpa.yaml
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dnsbl-query
+  labels:
+    helm.sh/chart: dnsbl-query-0.1.0
+    app.kubernetes.io/name: dnsbl-query
+    app.kubernetes.io/instance: dnsbl-query
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dnsbl-query
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 80
+---
+# Source: dnsbl-query/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: dnsbl-query
+  labels:
+    helm.sh/chart: dnsbl-query-0.1.0
+    app.kubernetes.io/name: dnsbl-query
+    app.kubernetes.io/instance: dnsbl-query
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+    - hosts:
+        - "dnsbl-query.testing.example"
+      secretName: dnsbl-query-tls
+  rules:
+    - host: "dnsbl-query.testing.example"
+      http:
+        paths:
+---
+# Source: dnsbl-query/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "dnsbl-query-test-connection"
+  labels:
+    helm.sh/chart: dnsbl-query-0.1.0
+    app.kubernetes.io/name: dnsbl-query
+    app.kubernetes.io/instance: dnsbl-query
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['dnsbl-query:80']
+  restartPolicy: Never
