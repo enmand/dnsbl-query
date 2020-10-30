@@ -7,18 +7,33 @@ import (
 	"strings"
 )
 
+// spamhaus is the service for making dnsbl queries
 type spamhaus struct {
 	network  string
-	resolver *net.Resolver
+	resolver resolver
 }
 
+// options are the options of the spamhaus dnsbl querier
 type options struct {
 	network    string
 	dnsServer  string
 	goResolver bool
 }
 
+// Option is the public interface for optional parameters
 type Option func(*options)
+
+// resolver is a resolver type that can look up an IP address set from a hostname
+type resolver interface {
+	LookupIP(context.Context, string, string) ([]net.IP, error)
+}
+
+// WithDNSServer sets a custom DNS server to use
+func WithDNSServer(server string) Option {
+	return func(o *options) {
+		o.dnsServer = server
+	}
+}
 
 func NewSpamhaus(opts ...Option) DNSBL {
 	options := &options{}
@@ -54,7 +69,6 @@ func (sh *spamhaus) Query(ctx context.Context, ip string) (*Response, error) {
 
 	r := newResponse()
 	for _, ip := range resp {
-		fmt.Printf("\ncode: %s\n", ip.String())
 		r.Codes = append(r.Codes, Code(ip.String()))
 	}
 
